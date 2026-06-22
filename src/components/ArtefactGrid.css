@@ -1,0 +1,21 @@
+.artefact-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), 1fr);
+  gap: 28px 20px;
+  padding: 0 24px 24px;
+}
+
+.artefact-grid-empty {
+  padding: 60px 24px;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .artefact-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .artefact-grid { grid-template-columns: repeat(2, 1fr); }
+}

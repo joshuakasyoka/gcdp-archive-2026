@@ -1,0 +1,38 @@
+.about-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.about-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+}
+
+.about-title {
+  font-family: 'Gambarino', Georgia, serif;
+  font-size: 36px;
+  font-weight: 400;
+  margin: 0 0 20px;
+  line-height: 1.15;
+}
+
+.about-col p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #222;
+  margin: 0 0 16px;
+}
+
+.about-link {
+  display: inline-block;
+  font-size: 13px;
+  color: #000;
+  text-decoration: underline;
+  margin-top: 8px;
+}
+
+@media (max-width: 700px) {
+  .about-body { grid-template-columns: 1fr; gap: 32px; }
+}

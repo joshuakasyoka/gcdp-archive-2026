@@ -1,0 +1,24 @@
+{
+  "terms": [
+    {
+      "term": "Cultural Identity",
+      "category": "themes",
+      "definition": "Explores how culture, heritage, and belonging shape design practice — including how students negotiate personal and collective identities through making, collaboration, and community engagement."
+    },
+    {
+      "term": "Intergenerational Practice",
+      "category": "themes",
+      "definition": "Design work that connects people across age groups, often through shared making, storytelling, or co-created artefacts that bridge different lived experiences."
+    },
+    {
+      "term": "participatory",
+      "category": "design_as",
+      "definition": "A mode of design that actively involves stakeholders, communities, or users in shaping outcomes rather than treating them as passive recipients."
+    },
+    {
+      "term": "audiorecording",
+      "category": "methods",
+      "definition": "The use of recorded sound — interviews, ambient audio, or spoken testimony — as a research and making method. Students employ audiorecording to capture voices, atmosphere, and narrative that might otherwise be lost in written documentation alone."
+    }
+  ]
+}

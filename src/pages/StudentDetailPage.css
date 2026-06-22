@@ -1,0 +1,71 @@
+.student-detail {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+.student-detail-header {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.student-detail-photo img {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  display: block;
+}
+
+.student-detail-photo-placeholder {
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: #d8d8d8;
+}
+
+.student-detail-cohort {
+  font-size: 12px;
+  color: #888;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.student-detail-name {
+  font-family: 'Gambarino', Georgia, serif;
+  font-size: 44px;
+  font-weight: 400;
+  margin: 0 0 20px;
+  line-height: 1.1;
+}
+
+.student-detail-about {
+  font-size: 14px;
+  line-height: 1.75;
+  color: #333;
+  margin: 0 0 24px;
+}
+
+.student-detail-project-link {
+  margin-top: 8px;
+}
+
+.btn-outline {
+  display: inline-block;
+  border: 1px solid #000;
+  padding: 9px 20px;
+  font-size: 13px;
+  text-decoration: none;
+  color: #000;
+  border-radius: 24px;
+  transition: all 0.15s;
+}
+
+.btn-outline:hover {
+  background: #000;
+  color: #fff;
+}
+
+@media (max-width: 800px) {
+  .student-detail-header { grid-template-columns: 1fr; }
+}

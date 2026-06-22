@@ -1,0 +1,19 @@
+.artefacts-page {
+  min-height: 100vh;
+}
+
+.artefacts-content {
+  /* the filter bar is sticky, content fills below */
+}
+
+.page-loading,
+.page-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  font-size: 15px;
+  color: #888;
+}
+
+.page-error { color: #c33; }

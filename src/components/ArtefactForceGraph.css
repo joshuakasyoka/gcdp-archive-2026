@@ -1,0 +1,21 @@
+.force-graph {
+  width: 100%;
+  height: calc(100vh - 180px);
+  min-height: 600px;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.force-graph-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.force-node {
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,0.08));
+  transition: filter 0.2s;
+}
+
+.force-node:hover {
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.18));
+}

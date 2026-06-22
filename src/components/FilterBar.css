@@ -1,0 +1,269 @@
+.filter-bar {
+  padding: 0 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Top row: 3-column grid so search is truly centred ── */
+.filter-top-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  padding: 24px 0 0;
+}
+
+.filter-cohorts {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-self: start;
+}
+
+.cohort-btn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  color: #888;
+  padding: 0;
+}
+
+.cohort-btn--active {
+  color: #000;
+  text-decoration: underline;
+}
+
+.cohort-btn:hover { color: #000; }
+
+.filter-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  justify-self: center;
+}
+
+.filter-search-label {
+  font-size: 13px;
+  color: #555;
+  white-space: nowrap;
+}
+
+.filter-search-input {
+  border: none;
+  border-bottom: 1px solid #ccc;
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  padding: 2px 0;
+  background: transparent;
+  width: 280px;
+}
+
+.filter-search-input:focus { border-bottom-color: #000; }
+
+.filter-view {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: end;
+}
+
+.filter-top-end {
+  justify-self: end;
+}
+
+.filter-view-label {
+  font-size: 12px;
+  color: #888;
+}
+
+.view-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: all 0.15s;
+}
+
+.view-btn--active {
+  background: #e8e8e8;
+  border-color: #e8e8e8;
+  color: #444;
+}
+
+.view-btn:hover:not(.view-btn--active) {
+  border-color: #000;
+  color: #000;
+}
+
+/* ── Selected chips (results + filter panel) ── */
+.filter-selected-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.active-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 220px;
+  padding: 7px 16px;
+  border: 1px solid #ccc;
+  border-radius: 100px;
+  background: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  color: #000;
+  transition: background 0.15s;
+}
+
+.active-chip:hover {
+  background: #f5f5f5;
+}
+
+.active-chip svg {
+  flex-shrink: 0;
+}
+
+/* ── Filter icon toggle ── */
+.filter-toggle-icon {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.filter-toggle-icon:hover {
+  border-color: #000;
+  color: #000;
+}
+
+.filter-toggle-icon--active {
+  background: #e8e8e8;
+  border-color: #e8e8e8;
+  color: #444;
+}
+
+/* ── Expanded panel ── */
+.filter-panel {
+  padding: 0 0 24px;
+}
+
+.filter-search-icon-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  background: none;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.filter-search-icon-btn:hover {
+  border-color: #000;
+  color: #000;
+}
+
+.filter-group {
+  margin-bottom: 32px;
+}
+
+.filter-group-label {
+  font-family: 'Gambarino', Georgia, serif;
+  font-size: 32px;
+  font-weight: 400;
+  text-align: center;
+  margin: 0 0 16px;
+  color: #000;
+}
+
+.filter-group-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Tag pill — default */
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 220px;
+  padding: 8px 20px;
+  border: 1px dashed #aaa;
+  border-radius: 100px;
+  background: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  color: #000;
+  transition: background 0.12s, border-color 0.12s;
+  line-height: 1;
+}
+
+/* Tag pill — hover */
+.filter-tag:hover {
+  background: #ebebeb;
+  border-color: #777;
+}
+
+/* Tag pill — active/selected: solid border, shows × */
+.filter-tag--active {
+  border: 1px solid #ccc;
+  background: #fff;
+}
+
+/* Show all chip */
+.filter-tag--show-all {
+  color: #555;
+  border-style: dashed;
+}
+
+.filter-tag--active:hover {
+  background: #f5f5f5;
+}
+
+.filter-tag-x {
+  flex-shrink: 0;
+}
+
+.filter-tag-label {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  word-break: break-word;
+  min-width: 0;
+  text-align: left;
+}
