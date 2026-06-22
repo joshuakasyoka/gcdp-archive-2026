@@ -190,7 +190,7 @@ export default function ProjectDetailPage() {
             )}
             <img
               src={photos[photoIndex]?.url}
-              alt={`${project.title} — photo ${photoIndex + 1}`}
+              alt={`${project.title} — ${photoIndex + 1} of ${photos.length}`}
             />
             {photos.length > 1 && (
               <div className="project-detail-carousel-nav">
