@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
 import { ZoomIn, ZoomOut } from 'lucide-react';
+import { initMapbox, getMapboxToken } from '../mapboxSetup';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import './ArtefactMapView.css';
 
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN || '';
+const mapboxgl = initMapbox();
 
 export default function ProjectMapView({ projects, mapPins }) {
   const containerRef = useRef(null);
@@ -26,7 +26,7 @@ export default function ProjectMapView({ projects, mapPins }) {
   }, [projects, mapPins]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !getMapboxToken()) return;
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
@@ -38,6 +38,7 @@ export default function ProjectMapView({ projects, mapPins }) {
     mapRef.current = map;
 
     map.on('load', () => {
+      map.resize();
       for (const { pin, projects: pinProjectsList } of Object.values(pinProjects)) {
         const el = document.createElement('div');
         el.className = 'map-pin';
@@ -58,6 +59,9 @@ export default function ProjectMapView({ projects, mapPins }) {
 
   return (
     <div className="map-view">
+      {!getMapboxToken() && (
+        <div className="map-error">Map unavailable — Mapbox token not configured.</div>
+      )}
       <div ref={containerRef} className="map-container" />
       <div className="map-zoom-controls">
         <button className="map-zoom-btn" onClick={() => mapRef.current?.zoomIn()} title="Zoom in">

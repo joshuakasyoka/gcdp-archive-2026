@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
 import { ZoomIn, ZoomOut } from 'lucide-react';
+import { initMapbox, getMapboxToken } from '../mapboxSetup';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import './ArtefactMapView.css';
 
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN || '';
+const mapboxgl = initMapbox();
 
 export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
   const containerRef = useRef(null);
@@ -23,7 +23,7 @@ export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
   }, [artefacts, mapPins]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !getMapboxToken()) return;
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
@@ -35,6 +35,7 @@ export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
     mapRef.current = map;
 
     map.on('load', () => {
+      map.resize();
       for (const { pin, artefacts: pinArts } of Object.values(pinArtefacts)) {
         const el = document.createElement('div');
         el.className = 'map-pin';
@@ -55,6 +56,9 @@ export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
 
   return (
     <div className="map-view">
+      {!getMapboxToken() && (
+        <div className="map-error">Map unavailable — Mapbox token not configured.</div>
+      )}
       <div ref={containerRef} className="map-container" />
       <div className="map-zoom-controls">
         <button className="map-zoom-btn" onClick={() => mapRef.current?.zoomIn()} title="Zoom in">
