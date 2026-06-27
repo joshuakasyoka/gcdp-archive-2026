@@ -1,5 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
+import ProgressiveImage from './ProgressiveImage';
 import './ArtefactCard.css';
 
 export default function ArtefactCard({ artefact, onClick, size = 'md', style }) {
@@ -13,7 +14,7 @@ export default function ArtefactCard({ artefact, onClick, size = 'md', style }) 
     >
       <div className="artefact-card__image">
         {img ? (
-          <img src={img} alt={artefact.title} loading="lazy" />
+          <ProgressiveImage src={img} alt={artefact.title} />
         ) : (
           <div className="artefact-card__placeholder" />
         )}

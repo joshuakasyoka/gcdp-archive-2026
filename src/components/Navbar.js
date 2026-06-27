@@ -5,7 +5,6 @@ import './Navbar.css';
 export default function Navbar() {
   const location = useLocation();
   const headerRef = useRef(null);
-  const isLanding = location.pathname === '/';
   const isAbout = location.pathname === '/about';
 
   useEffect(() => {
@@ -34,35 +33,21 @@ export default function Navbar() {
     <header className="navbar" ref={headerRef}>
       <nav className="navbar-top">
         <div className="navbar-left">
+          <Link to="/" className="navbar-title">MA GCDP ARCHIVE</Link>
+        </div>
+        <div className="navbar-right">
           <NavLink to="/about" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>About</NavLink>
           <NavLink to="/glossary" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Glossary</NavLink>
         </div>
-        <div className="navbar-center">
-          <div className="navbar-programme">MA GLOBAL COLLABORATIVE DESIGN PRACTICE</div>
-          <Link to="/" className="navbar-title">Archive</Link>
-        </div>
-        <div className="navbar-right">
-          <CamberwellLogo />
-        </div>
       </nav>
 
-      {!isLanding && !isAbout && (
+      {!isAbout && (
         <nav className="navbar-subnav">
-          <NavLink to="/artefacts" className={({ isActive }) => isActive ? 'subnav-link active' : 'subnav-link'}>Artefacts</NavLink>
+          <NavLink to="/" end className={({ isActive }) => isActive ? 'subnav-link active' : 'subnav-link'}>Artefacts</NavLink>
           <NavLink to="/projects" className={({ isActive }) => isActive ? 'subnav-link active' : 'subnav-link'}>Projects</NavLink>
-          <NavLink to="/students" className={({ isActive }) => isActive ? 'subnav-link active' : 'subnav-link'}>Students</NavLink>
+          <NavLink to="/collaborations" className={({ isActive }) => isActive ? 'subnav-link active' : 'subnav-link'}>Collaborations</NavLink>
         </nav>
       )}
     </header>
-  );
-}
-
-function CamberwellLogo() {
-  return (
-    <img
-      src={`${process.env.PUBLIC_URL}/camberwell-logo.png`}
-      alt="Camberwell College of Arts"
-      className="camberwell-logo"
-    />
   );
 }

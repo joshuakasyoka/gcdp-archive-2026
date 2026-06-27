@@ -13,9 +13,42 @@
 
 .force-node {
   filter: drop-shadow(0 1px 4px rgba(0,0,0,0.08));
-  transition: filter 0.2s;
+  transition: opacity 0.2s, filter 0.2s;
 }
 
-.force-node:hover {
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.18));
+.force-node:hover,
+.force-node--hovered {
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08));
+}
+
+.force-node--dimmed {
+  opacity: 0.5;
+}
+
+.force-node--connected rect {
+  stroke: #d4d4d4;
+}
+
+.force-node--hovered rect {
+  stroke: #b8b8b8;
+}
+
+.force-link-line {
+  transition: stroke 0.2s, opacity 0.2s;
+}
+
+.force-link--dimmed .force-link-line {
+  opacity: 0.45;
+}
+
+.force-link--active .force-link-line {
+  stroke: #c8c8c8;
+}
+
+.force-link-label {
+  paint-order: stroke;
+  stroke: #fafafa;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  transition: opacity 0.2s;
 }

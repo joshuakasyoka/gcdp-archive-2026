@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ZoomIn, ZoomOut } from 'lucide-react';
 import { initMapbox, getMapboxToken } from '../mapboxSetup';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './ArtefactMapView.css';
@@ -8,7 +7,6 @@ const mapboxgl = initMapbox();
 
 export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
   const containerRef = useRef(null);
-  const mapRef = useRef(null);
   const [selected, setSelected] = useState(null);
 
   const pinArtefacts = React.useMemo(() => {
@@ -30,9 +28,8 @@ export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
       style: 'mapbox://styles/mapbox/light-v11',
       center: [-0.1, 51.47],
       zoom: 11,
+      attributionControl: false,
     });
-
-    mapRef.current = map;
 
     map.on('load', () => {
       map.resize();
@@ -60,14 +57,6 @@ export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
         <div className="map-error">Map unavailable — Mapbox token not configured.</div>
       )}
       <div ref={containerRef} className="map-container" />
-      <div className="map-zoom-controls">
-        <button className="map-zoom-btn" onClick={() => mapRef.current?.zoomIn()} title="Zoom in">
-          <ZoomIn size={16} strokeWidth={1.5} />
-        </button>
-        <button className="map-zoom-btn" onClick={() => mapRef.current?.zoomOut()} title="Zoom out">
-          <ZoomOut size={16} strokeWidth={1.5} />
-        </button>
-      </div>
 
       {selected && (
         <div className="map-panel">
@@ -83,7 +72,7 @@ export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
               {selected.artefacts.map(a => (
                 <div key={a.artifact_id} className="map-panel-item" onClick={() => onSelect(a)}>
                   {a.file_paths?.[0] && (
-                    <img src={a.file_paths[0]} alt={a.title} className="map-panel-thumb" />
+                    <img src={a.file_paths[0]} alt={a.title} className="map-panel-thumb" loading="lazy" decoding="async" />
                   )}
                   <div>
                     <div className="map-panel-title">{a.title}</div>

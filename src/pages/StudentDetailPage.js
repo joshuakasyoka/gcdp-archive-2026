@@ -1,6 +1,8 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useArchive } from '../contexts/ArchiveContext';
+import Seo from '../components/Seo';
+import ProgressiveImage from '../components/ProgressiveImage';
 import './StudentDetailPage.css';
 
 export default function StudentDetailPage() {
@@ -10,20 +12,34 @@ export default function StudentDetailPage() {
   const student = students.find(s => s.student_id === studentId);
 
   if (loading) return <div className="page-loading">Loading…</div>;
-  if (!student) return <div className="page-error">Student not found.</div>;
+  if (!student) {
+    return (
+      <div className="page-error">
+        <Seo title="Student not found" path={`/students/${studentId}`} noindex />
+        Student not found.
+      </div>
+    );
+  }
 
   const project = student.projects?.[0];
   const cohortLabel = student.student_year
-    ? `${student.student_year} – ${(student.student_year + 1).toString().slice(-2)}`
+    ? `${student.student_year} – ${student.student_year + 2}`
     : '';
 
   return (
     <div className="student-detail">
-      <Link to="/students" className="page-back-link">&lt; Back</Link>
+      <Seo
+        title={student.name.display_name}
+        path={`/students/${student.student_id}`}
+        description={student.about || `Student profile and projects from the MA Global Collaborative Design Practice archive.`}
+        image={project?.project_photos?.[0]?.url || undefined}
+        type="profile"
+      />
+      <Link to="/collaborations" className="page-back-link">&lt; Back</Link>
       <div className="student-detail-header">
         <div className="student-detail-photo">
           {project?.project_photos?.[0]?.url ? (
-            <img src={project.project_photos[0].url} alt={student.name.display_name} />
+            <ProgressiveImage src={project.project_photos[0].url} alt={student.name.display_name} />
           ) : (
             <div className="student-detail-photo-placeholder" />
           )}

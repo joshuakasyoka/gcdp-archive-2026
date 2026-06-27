@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { X, ArrowUpRight } from 'lucide-react';
+import ProgressiveImage from './ProgressiveImage';
 import './ArtefactModal.css';
 
 export default function ArtefactModal({ artefact, onClose }) {
@@ -25,9 +26,12 @@ export default function ArtefactModal({ artefact, onClose }) {
 
           {/* Left: artefact image */}
           <div className="modal-image">
+            <button type="button" className="modal-close modal-close--on-image" onClick={onClose} aria-label="Close">
+              <X size={20} strokeWidth={1.5} />
+            </button>
             {imgs.length > 0 ? (
               <>
-                <img src={imgs[imgIndex]} alt={artefact.title} />
+                <ProgressiveImage src={imgs[imgIndex]} alt={artefact.title} loading="eager" />
                 {imgs.length > 1 && (
                   <div className="modal-image-nav">
                     {imgs.map((_, i) => (
@@ -47,7 +51,7 @@ export default function ArtefactModal({ artefact, onClose }) {
 
           {/* Right: info panel */}
           <div className="modal-info">
-            <button className="modal-close" onClick={onClose}>
+            <button type="button" className="modal-close modal-close--on-info" onClick={onClose} aria-label="Close">
               <X size={20} strokeWidth={1.5} />
             </button>
 
@@ -66,7 +70,8 @@ export default function ArtefactModal({ artefact, onClose }) {
                     className="modal-chip modal-chip--student"
                     onClick={onClose}
                   >
-                    {artefact._student.name.display_name} <ArrowUpRight size={11} strokeWidth={1.5} />
+                    <span className="chip-label">{artefact._student.name.display_name}</span>
+                    <ArrowUpRight size={11} strokeWidth={1.5} />
                   </Link>
                 </div>
               </div>
@@ -81,7 +86,8 @@ export default function ArtefactModal({ artefact, onClose }) {
                     className="modal-chip modal-chip--collab"
                     onClick={onClose}
                   >
-                    {artefact._project.title} <ArrowUpRight size={11} strokeWidth={1.5} />
+                    <span className="chip-label">{artefact._project.title}</span>
+                    <ArrowUpRight size={11} strokeWidth={1.5} />
                   </Link>
                 </div>
               </div>
@@ -93,7 +99,8 @@ export default function ArtefactModal({ artefact, onClose }) {
                 <div className="modal-chips">
                   {tags.collaborators.map(t => (
                     <span key={t} className="modal-chip modal-chip--collab">
-                      {t} <ArrowUpRight size={11} strokeWidth={1.5} />
+                      <span className="chip-label">{t}</span>
+                      <ArrowUpRight size={11} strokeWidth={1.5} />
                     </span>
                   ))}
                 </div>

@@ -7,6 +7,8 @@
     { "source": "/api/:path*", "destination": "https://gcdp2025.vercel.app/api/:path*" },
     { "source": "/uploads/:path*", "destination": "https://gcdp2025.vercel.app/uploads/:path*" },
     { "source": "/StudentPhotos/:path*", "destination": "https://gcdp2025.vercel.app/StudentPhotos/:path*" },
+    { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
+    { "source": "/robots.txt", "destination": "/robots.txt" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

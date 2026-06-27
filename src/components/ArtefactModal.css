@@ -33,12 +33,24 @@
   overflow: hidden;
 }
 
-.modal-image img {
+.modal-image img,
+.modal-image .progressive-image {
   width: 100%;
   height: auto;
   max-height: 90vh;
   object-fit: contain;
   display: block;
+}
+
+.modal-image .progressive-image {
+  filter: blur(10px);
+  transform: none;
+  opacity: 0.8;
+}
+
+.modal-image .progressive-image--loaded {
+  filter: none;
+  opacity: 1;
 }
 
 .modal-image-placeholder {
@@ -89,12 +101,17 @@
   color: #555;
   padding: 4px;
   line-height: 1;
+  z-index: 2;
+}
+
+.modal-close--on-image {
+  display: none;
 }
 
 .modal-close:hover { color: #000; }
 
 .modal-title {
-  font-family: 'Gambarino', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 36px;
   font-weight: 400;
   margin: 0;
@@ -123,7 +140,7 @@
 }
 
 .modal-section-label {
-  font-family: 'Gambarino', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 16px;
   font-weight: 400;
   color: #000;
@@ -139,6 +156,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  max-width: 100%;
 }
 
 .modal-chip {
@@ -151,6 +169,25 @@
   border-radius: 100px;
   color: #222;
   background: #fff;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.modal-chip svg {
+  flex-shrink: 0;
+}
+
+.modal-chip:not(:has(svg)) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .modal-chip--collab {
@@ -162,6 +199,46 @@ a.modal-chip {
 }
 
 @media (max-width: 640px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: none;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
   .modal-body { grid-template-columns: 1fr; }
   .modal-image { min-height: 260px; }
+
+  .modal-close--on-info {
+    display: none;
+  }
+
+  .modal-close--on-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    color: #222;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  }
+
+  .modal-close--on-image:hover {
+    color: #000;
+    background: #fff;
+  }
+
+  .modal-title {
+    padding-right: 0;
+  }
 }

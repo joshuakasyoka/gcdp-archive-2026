@@ -16,9 +16,109 @@
       "definition": "A mode of design that actively involves stakeholders, communities, or users in shaping outcomes rather than treating them as passive recipients."
     },
     {
+      "term": "storytelling",
+      "category": "methods",
+      "definition": "A method using narrative structure to share experiences, meanings, or knowledge. In design research, it surfaces personal and cultural context, helping participants articulate lived experience in ways that inform empathic, situated design responses."
+    },
+    {
+      "term": "guided_conversation",
+      "category": "methods",
+      "definition": "A semi structured dialogue led by a facilitator using open prompts rather than fixed questions. It allows participants to shape the discussion while still surfacing insights relevant to the research focus."
+    },
+    {
+      "term": "ethnography",
+      "category": "methods",
+      "definition": "A qualitative method involving immersive observation and engagement within a community or context. It builds rich, situated understanding of practices, values, and relationships that quantitative methods often overlook."
+    },
+    {
+      "term": "participatory_mapping",
+      "category": "methods",
+      "definition": "A visual method where participants collectively represent spatial, social, or conceptual relationships. It externalises tacit knowledge, revealing patterns, networks, and priorities that might otherwise remain unspoken."
+    },
+    {
+      "term": "workshop",
+      "category": "methods",
+      "definition": "A facilitated, time bound session where participants engage in collaborative activities such as making, discussing, or co designing. Workshops generate shared understanding and tangible outputs through structured group participation."
+    },
+    {
+      "term": "interview",
+      "category": "methods",
+      "definition": "A method involving direct, often one to one conversation to gather detailed personal accounts. Interviews can be structured, semi structured, or open, depending on the depth and flexibility required."
+    },
+    {
       "term": "audiorecording",
       "category": "methods",
-      "definition": "The use of recorded sound — interviews, ambient audio, or spoken testimony — as a research and making method. Students employ audiorecording to capture voices, atmosphere, and narrative that might otherwise be lost in written documentation alone."
+      "definition": "The capture of spoken word, sound, or ambient context as primary research data. It preserves tone, nuance, and detail often lost in written notes, supporting later analysis and reflection."
+    },
+    {
+      "term": "autoethnography",
+      "category": "methods",
+      "definition": "A reflexive method where the researcher uses personal experience as a primary source of analysis. It connects individual narrative to broader cultural, social, or political context."
+    },
+    {
+      "term": "collage",
+      "category": "methods",
+      "definition": "A visual method combining fragments of images, text, or materials to express ideas, emotions, or relationships. It supports associative thinking and can surface insights that are difficult to articulate verbally."
+    },
+    {
+      "term": "creativewriting",
+      "category": "methods",
+      "definition": "A reflective or expressive method using narrative, poetic, or fictional text to explore experience, identity, or concept. It allows nuanced articulation beyond literal description."
+    },
+    {
+      "term": "culturalprobes",
+      "category": "methods",
+      "definition": "Self documentation tools given to participants to capture everyday experience over time, often through prompts, diaries, or small tasks. They generate personal, situated material for later interpretation."
+    },
+    {
+      "term": "data_visualization",
+      "category": "methods",
+      "definition": "The representation of information through visual formats such as charts, diagrams, or maps. It clarifies patterns, relationships, and structures within complex or layered data sets."
+    },
+    {
+      "term": "photography",
+      "category": "methods",
+      "definition": "A visual documentation method capturing moments, objects, or environments as research material. It supports analysis, reflection, and communication of context that text alone cannot convey."
+    },
+    {
+      "term": "reflective_practice",
+      "category": "methods",
+      "definition": "A method involving deliberate, often written or spoken consideration of one's own actions, decisions, or experiences. It supports learning and deeper understanding through critical self examination."
+    },
+    {
+      "term": "co_design",
+      "category": "methods",
+      "definition": "A collaborative method where designers and stakeholders, often including non designers, jointly shape outcomes throughout the design process. It distributes authorship and centres lived expertise."
+    },
+    {
+      "term": "collaborative_storytelling",
+      "category": "methods",
+      "definition": "A method where multiple participants jointly construct a narrative, contributing perspectives that build on one another. It surfaces shared and divergent meanings, fostering collective sense making around a topic or experience."
+    },
+    {
+      "term": "visual_ethnography",
+      "category": "methods",
+      "definition": "A qualitative method using photography or video to document everyday practices, environments, and interactions. It captures visual detail often missed in written accounts, supporting situated analysis of cultural and social context."
+    },
+    {
+      "term": "critical_making",
+      "category": "methods",
+      "definition": "A method combining physical or digital making with critical reflection on social, political, or ethical implications. It uses the act of making as a way to question assumptions embedded in technology, systems, or design."
+    },
+    {
+      "term": "material_exploration",
+      "category": "methods",
+      "definition": "A hands on method investigating the properties, behaviours, and possibilities of materials through direct experimentation. It generates embodied knowledge about texture, form, and function that informs design decisions beyond conceptual reasoning."
+    },
+    {
+      "term": "co_creative_practice",
+      "category": "methods",
+      "definition": "A collaborative method where participants and designers jointly generate ideas, forms, or outcomes through shared making. It distributes creative authorship and centres collective input throughout the process rather than at a single stage."
+    },
+    {
+      "term": "cosmological_situating",
+      "category": "methods",
+      "definition": "A method positioning design within broader belief systems, worldviews, or relationships between people, land, and non human entities. It surfaces values and meanings that shape how communities understand their place in the world."
     }
   ]
 }

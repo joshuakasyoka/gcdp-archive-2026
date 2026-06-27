@@ -30,7 +30,7 @@
 }
 
 .landing-about-title {
-  font-family: 'Gambarino', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 36px;
   font-weight: 400;
   margin: 0 0 20px;

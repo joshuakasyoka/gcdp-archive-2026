@@ -1,9 +1,50 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import * as d3 from 'd3';
+import { isPriorityTag } from '../config/priorityTags';
 import './ArtefactForceGraph.css';
 
 const CARD_W = 160;
 const CARD_H = 130;
+const IMAGE_H = 96;
+
+const LINK_CATEGORIES = [
+  { key: 'themes', label: 'Theme' },
+  { key: 'design_as', label: 'Design as' },
+  { key: 'methods', label: 'Method' },
+];
+
+function getSharedLinkInfo(tagsA, tagsB) {
+  const shared = [];
+  for (const { key } of LINK_CATEGORIES) {
+    const a = (tagsA?.[key] || []).filter(t => isPriorityTag(key, t));
+    const b = (tagsB?.[key] || []).filter(t => isPriorityTag(key, t));
+    for (const t of a) {
+      if (b.includes(t)) shared.push(t);
+    }
+  }
+  return { shared, label: shared.join(' · ') };
+}
+
+function nodeId(linkEnd) {
+  return typeof linkEnd === 'object' ? linkEnd.id : linkEnd;
+}
+
+function layoutNodesInCircle(nodes, width, height) {
+  const cx = width / 2;
+  const cy = height / 2;
+  const radius = Math.max(
+    Math.min(width, height) / 2 - CARD_W * 0.8,
+    CARD_W * 2,
+  );
+  const step = (2 * Math.PI) / nodes.length;
+  nodes.forEach((node, i) => {
+    const angle = i * step - Math.PI / 2;
+    node.x = cx + radius * Math.cos(angle);
+    node.y = cy + radius * Math.sin(angle);
+    node.vx = 0;
+    node.vy = 0;
+  });
+}
 
 export default function ArtefactForceGraph({ artefacts, onSelect }) {
   const svgRef = useRef(null);
@@ -15,8 +56,6 @@ export default function ArtefactForceGraph({ artefacts, onSelect }) {
     const nodes = artefacts.map(a => ({
       id: a.artifact_id,
       artefact: a,
-      x: Math.random() * 800,
-      y: Math.random() * 600,
     }));
 
     const links = [];
@@ -24,24 +63,17 @@ export default function ArtefactForceGraph({ artefacts, onSelect }) {
 
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
-        const a = artefacts[i];
-        const b = artefacts[j];
-        const tagsA = [
-          ...(a.tags?.themes || []),
-          ...(a.tags?.design_as || []),
-          ...(a.tags?.methods || []),
-        ];
-        const tagsB = [
-          ...(b.tags?.themes || []),
-          ...(b.tags?.design_as || []),
-          ...(b.tags?.methods || []),
-        ];
-        const shared = tagsA.filter(t => tagsB.includes(t));
+        const { shared, label } = getSharedLinkInfo(artefacts[i].tags, artefacts[j].tags);
         if (shared.length >= 2) {
           const key = `${nodes[i].id}-${nodes[j].id}`;
           if (!seen.has(key)) {
             seen.add(key);
-            links.push({ source: nodes[i].id, target: nodes[j].id, strength: shared.length });
+            links.push({
+              source: nodes[i].id,
+              target: nodes[j].id,
+              strength: shared.length,
+              label,
+            });
           }
         }
       }
@@ -70,21 +102,69 @@ export default function ArtefactForceGraph({ artefacts, onSelect }) {
 
     const g = svg.append('g');
 
+    layoutNodesInCircle(nodes, width, height);
+
     const simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id(d => d.id).distance(280).strength(d => Math.min(d.strength * 0.08, 0.4)))
-      .force('charge', d3.forceManyBody().strength(-600))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(CARD_W * 0.7));
+      .velocityDecay(0.72)
+      .alpha(0.12)
+      .alphaDecay(0.008)
+      .force('link', d3.forceLink(links).id(d => d.id).distance(420).strength(d => Math.min(d.strength * 0.04, 0.18)))
+      .force('charge', d3.forceManyBody().strength(-1100))
+      .force('center', d3.forceCenter(width / 2, height / 2).strength(0.04))
+      .force('collision', d3.forceCollide().radius(CARD_W * 0.9).strength(0.5));
 
     simulationRef.current = simulation;
 
     const link = g.append('g')
-      .selectAll('line')
+      .attr('class', 'force-links')
+      .selectAll('g')
       .data(links)
       .enter()
-      .append('line')
+      .append('g')
+      .attr('class', 'force-link');
+
+    link.append('line')
+      .attr('class', 'force-link-line')
       .attr('stroke', '#ddd')
       .attr('stroke-width', d => Math.min(d.strength * 0.5, 2));
+
+    link.append('text')
+      .attr('class', 'force-link-label')
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'middle')
+      .attr('font-size', '10px')
+      .attr('font-family', 'sans-serif')
+      .attr('fill', '#444')
+      .text(d => d.label)
+      .style('pointer-events', 'none')
+      .style('opacity', 0);
+
+    function setHighlight(hoveredId) {
+      const connectedIds = new Set();
+      if (hoveredId) {
+        connectedIds.add(hoveredId);
+        for (const l of links) {
+          const sid = nodeId(l.source);
+          const tid = nodeId(l.target);
+          if (sid === hoveredId) connectedIds.add(tid);
+          if (tid === hoveredId) connectedIds.add(sid);
+        }
+      }
+
+      node.classed('force-node--dimmed', d => hoveredId && !connectedIds.has(d.id));
+      node.classed('force-node--connected', d => hoveredId && connectedIds.has(d.id) && d.id !== hoveredId);
+      node.classed('force-node--hovered', d => d.id === hoveredId);
+
+      link.each(function(l) {
+        const sid = nodeId(l.source);
+        const tid = nodeId(l.target);
+        const isConnected = hoveredId && (sid === hoveredId || tid === hoveredId);
+        const el = d3.select(this);
+        el.classed('force-link--active', isConnected);
+        el.classed('force-link--dimmed', hoveredId && !isConnected);
+        el.select('.force-link-label').style('opacity', isConnected ? 1 : 0);
+      });
+    }
 
     const node = g.append('g')
       .selectAll('g')
@@ -92,10 +172,15 @@ export default function ArtefactForceGraph({ artefacts, onSelect }) {
       .enter()
       .append('g')
       .attr('class', 'force-node')
+      .on('mouseenter', (event, d) => {
+        event.stopPropagation();
+        setHighlight(d.id);
+      })
+      .on('mouseleave', () => setHighlight(null))
       .call(
         d3.drag()
           .on('start', (event, d) => {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
+            if (!event.active) simulation.alphaTarget(0.1).restart();
             d.fx = d.x; d.fy = d.y;
           })
           .on('drag', (event, d) => {
@@ -123,13 +208,13 @@ export default function ArtefactForceGraph({ artefacts, onSelect }) {
       .attr('x', -CARD_W / 2 + 4)
       .attr('y', -CARD_H / 2 + 4)
       .attr('width', CARD_W - 8)
-      .attr('height', 76)
+      .attr('height', IMAGE_H)
       .attr('preserveAspectRatio', 'xMidYMid slice')
       .attr('href', d => d.artefact.file_paths?.[0] || '')
       .style('pointer-events', 'none');
 
     node.append('text')
-      .attr('y', CARD_H / 2 - 32)
+      .attr('y', CARD_H / 2 - 14)
       .attr('text-anchor', 'middle')
       .attr('font-size', '11px')
       .attr('font-family', 'sans-serif')
@@ -137,40 +222,35 @@ export default function ArtefactForceGraph({ artefacts, onSelect }) {
       .text(d => d.artefact.title?.length > 22 ? d.artefact.title.slice(0, 22) + '…' : d.artefact.title)
       .style('pointer-events', 'none');
 
-    node.each(function(d) {
-      const tagList = [
-        ...(d.artefact.tags?.themes || []).slice(0, 1),
-        ...(d.artefact.tags?.design_as || []).slice(0, 1),
-      ].slice(0, 2);
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
 
-      const grp = d3.select(this);
-      tagList.forEach((tag, i) => {
-        grp.append('rect')
-          .attr('x', -CARD_W / 2 + 6 + i * 68)
-          .attr('y', CARD_H / 2 - 22)
-          .attr('width', 62)
-          .attr('height', 14)
-          .attr('rx', 7)
-          .attr('fill', '#f0f0f0')
-          .style('pointer-events', 'none');
-
-        grp.append('text')
-          .attr('x', -CARD_W / 2 + 6 + i * 68 + 31)
-          .attr('y', CARD_H / 2 - 12)
-          .attr('text-anchor', 'middle')
-          .attr('font-size', '9px')
-          .attr('fill', '#555')
-          .text(tag.length > 9 ? tag.slice(0, 9) + '…' : tag)
-          .style('pointer-events', 'none');
-      });
-    });
+    g.attr('opacity', 0)
+      .transition()
+      .duration(900)
+      .ease(d3.easeCubicOut)
+      .attr('opacity', 1);
 
     simulation.on('tick', () => {
-      link
-        .attr('x1', d => d.source.x)
-        .attr('y1', d => d.source.y)
-        .attr('x2', d => d.target.x)
-        .attr('y2', d => d.target.y);
+      link.each(function(d) {
+        const x1 = d.source.x;
+        const y1 = d.source.y;
+        const x2 = d.target.x;
+        const y2 = d.target.y;
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+        const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+        const flip = angle > 90 || angle < -90;
+        const labelAngle = flip ? angle + 180 : angle;
+
+        d3.select(this).select('.force-link-line')
+          .attr('x1', x1)
+          .attr('y1', y1)
+          .attr('x2', x2)
+          .attr('y2', y2);
+
+        d3.select(this).select('.force-link-label')
+          .attr('transform', `translate(${midX},${midY}) rotate(${labelAngle})`);
+      });
       node.attr('transform', d => `translate(${d.x},${d.y})`);
     });
 

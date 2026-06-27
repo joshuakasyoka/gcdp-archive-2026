@@ -2,8 +2,11 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useArchive } from '../contexts/ArchiveContext';
+import Seo from '../components/Seo';
 import ArtefactModal from '../components/ArtefactModal';
+import '../components/ArtefactModal.css';
 import ArtefactCard from '../components/ArtefactCard';
+import ProgressiveImage from '../components/ProgressiveImage';
 import './ProjectDetailPage.css';
 
 const PREVIEW_COUNT = 3;
@@ -56,11 +59,18 @@ export default function ProjectDetailPage() {
   }, [project]);
 
   if (loading) return <div className="page-loading">Loading…</div>;
-  if (!project) return <div className="page-error">Project not found.</div>;
+  if (!project) {
+    return (
+      <div className="page-error">
+        <Seo title="Project not found" path={`/projects/${projectId}`} noindex />
+        Project not found.
+      </div>
+    );
+  }
 
   const photos = project.project_photos || [];
   const cohortLabel = project._student?.student_year
-    ? `${project._student.student_year} – ${(project._student.student_year + 1).toString().slice(-2)}`
+    ? `${project._student.student_year} – ${project._student.student_year + 2}`
     : '';
 
   const goToPrevPhoto = () => {
@@ -79,18 +89,39 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="project-detail">
+      <Seo
+        title={project.title}
+        path={`/projects/${project.project_id}`}
+        description={
+          project.description ||
+          project.artifacts?.[0]?.description ||
+          `Project by ${project._student?.name?.display_name || 'a GCDP student'} in the MA Global Collaborative Design Practice archive.`
+        }
+        image={photos[0]?.url || project.artifacts?.[0]?.file_paths?.[0] || undefined}
+        type="article"
+      />
       <Link to="/projects" className="page-back-link">&lt; Back</Link>
       <div className="project-detail-header">
 
         {/* Left column: text + tags */}
         <div className="project-detail-meta">
           <h1 className="project-detail-title">{project.title}</h1>
-          <Link
-            to={`/students/${project._student?.student_id}`}
-            className="project-detail-student"
-          >
-            {project._student?.name?.display_name}
-          </Link>
+          {(project._students?.length ? project._students : [project._student]).filter(Boolean).length > 0 && (
+            <div className="modal-chips project-detail-student-chips">
+              {(project._students?.length ? project._students : [project._student])
+                .filter(s => s?.name?.display_name)
+                .map(s => (
+                  <Link
+                    key={s.student_id}
+                    to={`/students/${s.student_id}`}
+                    className="modal-chip modal-chip--student"
+                  >
+                    <span className="chip-label">{s.name.display_name}</span>
+                    <ArrowUpRight size={11} strokeWidth={1.5} />
+                  </Link>
+                ))}
+            </div>
+          )}
 
           {project.description && (
             <p className="project-detail-description">{project.description}</p>
@@ -124,7 +155,7 @@ export default function ProjectDetailPage() {
                   tags={aggregatedTags[key]}
                   expanded={expandedCats[key]}
                   onToggle={() => setExpandedCats(prev => ({ ...prev, [key]: !prev[key] }))}
-                  renderChip={t => <span key={t} className="project-tag-chip">{t}</span>}
+                  renderChip={t => <span key={t} className="project-tag-chip"><span className="chip-label">{t}</span></span>}
                 />
               </div>
               )
@@ -148,7 +179,8 @@ export default function ProjectDetailPage() {
                 onToggle={() => setExpandedCats(prev => ({ ...prev, collaborators: !prev.collaborators }))}
                 renderChip={t => (
                   <span key={t} className="project-tag-chip project-tag-chip--collab">
-                    {t} <ArrowUpRight size={11} strokeWidth={1.5} />
+                    <span className="chip-label">{t}</span>
+                    <ArrowUpRight size={11} strokeWidth={1.5} />
                   </span>
                 )}
               />
@@ -188,9 +220,10 @@ export default function ProjectDetailPage() {
                 </button>
               </>
             )}
-            <img
+            <ProgressiveImage
               src={photos[photoIndex]?.url}
               alt={`${project.title} — ${photoIndex + 1} of ${photos.length}`}
+              loading="eager"
             />
             {photos.length > 1 && (
               <div className="project-detail-carousel-nav">
@@ -212,11 +245,15 @@ export default function ProjectDetailPage() {
       {project.artifacts?.length > 0 && (
         <div className="project-detail-artefacts">
           <h2>Artefacts</h2>
+          <p className="project-detail-artefacts-intro">
+            These artefacts are part of this project — outputs from workshops, making, research,
+            and documentation gathered across its development.
+          </p>
           <div className="project-artefact-grid">
             {project.artifacts.map(a => (
               <ArtefactCard
                 key={a.artifact_id}
-                artefact={{ ...a, _project: project, _student: project._student }}
+                artefact={{ ...a, _project: project, _student: a._student || project._student }}
                 onClick={setSelected}
               />
             ))}

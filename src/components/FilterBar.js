@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { LayoutGrid, MapPin, Network, Search, X, SlidersHorizontal } from 'lucide-react';
+import { LayoutGrid, List, MapPin, Network, Search, X, SlidersHorizontal } from 'lucide-react';
 import clsx from 'clsx';
+import { isPriorityTag } from '../config/priorityTags';
 import './FilterBar.css';
 
 const COHORTS = [
   { label: 'All', value: null },
-  { label: '2025 – 26', value: 2025 },
-  { label: '2024 – 25', value: 2024 },
+  { label: '2024 – 2026', value: 2024 },
+  { label: '2023 – 2025', value: 2023 },
 ];
 
 const TAG_CATEGORIES = ['themes', 'design_as', 'materials', 'methods', 'collaborators'];
@@ -30,10 +31,18 @@ export default function FilterBar({
   showViewToggle = true,
   viewModes = ['grid', 'map', 'graph'],
   showTagFilters = true,
+  showFilterToggle = false,
+  filterPanelContent = null,
+  leftSlot = null,
+  leftOptions = null,
+  leftValue,
+  onLeftChange,
+  useListViewIcon = false,
   onFilterPanelChange,
 }) {
   const [showFilters, setShowFilters] = useState(false);
   const [expandedCats, setExpandedCats] = useState({});
+  const hasFilterPanel = showTagFilters || !!filterPanelContent;
 
   useEffect(() => {
     onFilterPanelChange?.(showFilters);
@@ -45,7 +54,7 @@ export default function FilterBar({
       const tags = itemTagsKey ? item[itemTagsKey] : item.tags;
       for (const cat of TAG_CATEGORIES) {
         for (const t of tags?.[cat] || []) {
-          if (t) sets[cat].add(t);
+          if (t && isPriorityTag(cat, t)) sets[cat].add(t);
         }
       }
     }
@@ -82,12 +91,27 @@ export default function FilterBar({
     setShowFilters(false);
   }
 
+  const leftChoices = leftOptions || COHORTS;
+  const currentLeftValue = leftOptions ? leftValue : filters.cohort;
+
+  function handleLeftSelectChange(e) {
+    const selected = leftChoices.find(
+      c => String(c.value ?? '') === e.target.value
+    );
+    const nextValue = selected ? selected.value : null;
+    if (leftOptions) {
+      onLeftChange?.(nextValue);
+    } else {
+      onFiltersChange({ ...filters, cohort: nextValue });
+    }
+  }
+
   return (
     <div className="filter-bar">
       {/* Row 1: cohorts + search + view toggle */}
       <div className="filter-top-row">
         <div className="filter-cohorts">
-          {COHORTS.map(c => (
+          {leftSlot || COHORTS.map(c => (
             <button
               key={c.label}
               className={clsx('cohort-btn', filters.cohort === c.value && 'cohort-btn--active')}
@@ -99,6 +123,18 @@ export default function FilterBar({
         </div>
 
         <div className="filter-search">
+          <select
+            className="cohort-select"
+            value={String(currentLeftValue ?? '')}
+            onChange={handleLeftSelectChange}
+            aria-label={leftOptions ? 'Sort by' : 'Filter by year'}
+          >
+            {leftChoices.map(c => (
+              <option key={c.label} value={String(c.value ?? '')}>
+                {c.label}
+              </option>
+            ))}
+          </select>
           <label className="filter-search-label">Search:</label>
           <input
             type="text"
@@ -106,14 +142,23 @@ export default function FilterBar({
             value={filters.query || ''}
             onChange={e => onFiltersChange({ ...filters, query: e.target.value })}
           />
-          {showTagFilters && (
-            <button
-              className={clsx('filter-toggle-icon', showFilters && 'filter-toggle-icon--active')}
-              onClick={() => setShowFilters(v => !v)}
-              title={showFilters ? 'Hide Filters' : 'Show Filters'}
-            >
-              <SlidersHorizontal size={16} strokeWidth={1.5} />
-            </button>
+          {(showTagFilters || showFilterToggle) && (
+            hasFilterPanel ? (
+              <button
+                type="button"
+                className={clsx('filter-toggle-chip', showFilters && 'filter-toggle-chip--active')}
+                onClick={() => setShowFilters(v => !v)}
+                title={showFilters ? 'Hide Filters' : 'Show Filters'}
+              >
+                <SlidersHorizontal size={14} strokeWidth={1.5} />
+                <span>Filter</span>
+              </button>
+            ) : (
+              <span className="filter-toggle-chip filter-toggle-chip--decorative" aria-hidden="true">
+                <SlidersHorizontal size={14} strokeWidth={1.5} />
+                <span>Filter</span>
+              </span>
+            )
           )}
         </div>
 
@@ -121,8 +166,8 @@ export default function FilterBar({
           <div className="filter-view">
             <span className="filter-view-label">View</span>
             {viewModes.includes('grid') && (
-              <button className={clsx('view-btn', view === 'grid' && 'view-btn--active')} onClick={() => onViewChange('grid')} title="Grid">
-                <LayoutGrid size={14} />
+              <button className={clsx('view-btn', view === 'grid' && 'view-btn--active')} onClick={() => onViewChange('grid')} title={useListViewIcon ? 'List' : 'Grid'}>
+                {useListViewIcon ? <List size={14} /> : <LayoutGrid size={14} />}
               </button>
             )}
             {viewModes.includes('map') && (
@@ -166,7 +211,13 @@ export default function FilterBar({
       )}
 
       {/* Expanded filter panel */}
-      {showTagFilters && showFilters && (
+      {showFilters && filterPanelContent && (
+        <div className="filter-panel filter-panel--custom">
+          {filterPanelContent}
+        </div>
+      )}
+
+      {showTagFilters && showFilters && !filterPanelContent && (
         <div className="filter-panel">
           {TAG_CATEGORIES.filter(cat => allTags[cat]?.length > 0).map(cat => {
             const tags = allTags[cat];

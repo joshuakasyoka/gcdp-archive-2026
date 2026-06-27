@@ -1,0 +1,9 @@
+.view-loading-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+  font-size: 13px;
+  color: #666;
+  background: #fafafa;
+}

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ZoomIn, ZoomOut } from 'lucide-react';
 import { initMapbox, getMapboxToken } from '../mapboxSetup';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './ArtefactMapView.css';
@@ -9,7 +8,6 @@ const mapboxgl = initMapbox();
 
 export default function ProjectMapView({ projects, mapPins }) {
   const containerRef = useRef(null);
-  const mapRef = useRef(null);
   const [selected, setSelected] = useState(null);
 
   const pinProjects = useMemo(() => {
@@ -33,9 +31,8 @@ export default function ProjectMapView({ projects, mapPins }) {
       style: 'mapbox://styles/mapbox/light-v11',
       center: [-0.1, 51.47],
       zoom: 11,
+      attributionControl: false,
     });
-
-    mapRef.current = map;
 
     map.on('load', () => {
       map.resize();
@@ -63,14 +60,6 @@ export default function ProjectMapView({ projects, mapPins }) {
         <div className="map-error">Map unavailable — Mapbox token not configured.</div>
       )}
       <div ref={containerRef} className="map-container" />
-      <div className="map-zoom-controls">
-        <button className="map-zoom-btn" onClick={() => mapRef.current?.zoomIn()} title="Zoom in">
-          <ZoomIn size={16} strokeWidth={1.5} />
-        </button>
-        <button className="map-zoom-btn" onClick={() => mapRef.current?.zoomOut()} title="Zoom out">
-          <ZoomOut size={16} strokeWidth={1.5} />
-        </button>
-      </div>
 
       {selected && (
         <div className="map-panel">
@@ -86,7 +75,7 @@ export default function ProjectMapView({ projects, mapPins }) {
               {selected.projects.map(project => {
                 const coverImg = project.project_photos?.[0]?.url || project.artifacts?.[0]?.file_paths?.[0];
                 const cohortLabel = project._student?.student_year
-                  ? `${project._student.student_year} – ${(project._student.student_year + 1).toString().slice(-2)}`
+                  ? `${project._student.student_year} – ${project._student.student_year + 2}`
                   : '';
                 return (
                   <Link
@@ -95,7 +84,7 @@ export default function ProjectMapView({ projects, mapPins }) {
                     className="map-panel-item"
                   >
                     {coverImg && (
-                      <img src={coverImg} alt={project.title} className="map-panel-thumb" />
+                      <img src={coverImg} alt={project.title} className="map-panel-thumb" loading="lazy" decoding="async" />
                     )}
                     <div>
                       <div className="map-panel-title">{project.title}</div>

@@ -14,15 +14,16 @@
     "mapbox-gl": "^3.25.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^7.18.0",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
-    "postinstall": "cp node_modules/mapbox-gl/dist/mapbox-gl-csp-worker.js public/",
-    "build:vercel": "cp node_modules/mapbox-gl/dist/mapbox-gl-csp-worker.js public/ && GENERATE_SOURCEMAP=false react-scripts build",
+    "build": "node scripts/generate-sitemap.js && react-scripts build",
+    "postinstall": "cp node_modules/mapbox-gl/dist/mapbox-gl-csp-worker.js public/ && node scripts/link-student-photos.js && node scripts/generate-sitemap.js",
+    "build:vercel": "cp node_modules/mapbox-gl/dist/mapbox-gl-csp-worker.js public/ && node scripts/generate-sitemap.js && GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -32,7 +33,6 @@
       "react-app/jest"
     ]
   },
-  "proxy": "http://localhost:3001",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -44,5 +44,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "sharp": "^0.35.2"
   }
 }

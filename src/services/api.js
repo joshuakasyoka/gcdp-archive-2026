@@ -1,4 +1,5 @@
-const BASE = '/api';
+const API_ROOT = (process.env.REACT_APP_API_URL || '').replace(/\/$/, '');
+const BASE = API_ROOT ? `${API_ROOT}/api` : '/api';
 
 async function get(path) {
   const res = await fetch(BASE + path);
@@ -29,11 +30,11 @@ export async function fetchGlossary() {
 }
 
 export function mediaUrl(fileId) {
-  return `/api/media/${fileId}`;
+  return `${BASE}/media/${fileId}`;
 }
 
 export function imageUrl(filePath) {
   if (!filePath) return null;
   if (filePath.startsWith('http')) return filePath;
-  return filePath;
+  return API_ROOT ? `${API_ROOT}${filePath}` : filePath;
 }

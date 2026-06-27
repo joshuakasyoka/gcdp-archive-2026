@@ -1,21 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Seo from '../components/Seo';
 import './LandingPage.css';
 
 export default function AboutPage() {
   return (
     <div className="landing">
+      <Seo
+        title="About"
+        path="/about"
+        description="Learn about the MA GCDP Digital Archive and the MA Global Collaborative Design Practice postgraduate programme run by UAL and Kyoto Institute of Technology."
+      />
       <div className="landing-hero">
         <img
           className="landing-hero-image"
           src={`${process.env.PUBLIC_URL}/banner.jpg`}
-          alt=""
+          alt="MA Global Collaborative Design Practice archive banner"
         />
       </div>
 
       <div className="landing-about">
         <div className="landing-about-col">
-          <h2 className="landing-about-title">About the archive</h2>
+          <h1 className="landing-about-title">About the archive</h1>
           <p className="landing-about-text">
             This archive is a living record of the work produced by students of the MA Global
             Collaborative Design Practice: a growing collection of projects, artefacts, methods, and
@@ -26,9 +32,9 @@ export default function AboutPage() {
             across London and Kyoto where this work has taken root.
           </p>
           <div className="landing-ctas">
-            <Link to="/artefacts" className="cta-btn">Explore Artefacts</Link>
+            <Link to="/" className="cta-btn">Explore Artefacts</Link>
             <Link to="/projects" className="cta-btn">Explore Projects</Link>
-            <Link to="/students" className="cta-btn">Explore Students</Link>
+            <Link to="/collaborations" className="cta-btn">Explore Collaborations</Link>
           </div>
         </div>
 

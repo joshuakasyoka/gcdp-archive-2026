@@ -1,9 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { useArchive } from '../contexts/ArchiveContext';
+import Seo from '../components/Seo';
 import FilterBar from '../components/FilterBar';
-import ProjectMapView from '../components/ProjectMapView';
+import ProgressiveImage from '../components/ProgressiveImage';
+import ViewLoadingFallback from '../components/ViewLoadingFallback';
 import './ProjectsPage.css';
+
+const ProjectMapView = lazy(() => import('../components/ProjectMapView'));
+const ProjectForceGraph = lazy(() => import('../components/ProjectForceGraph'));
 
 function matchesFilters(project, filters) {
   if (filters.cohort !== null && filters.cohort !== undefined) {
@@ -31,8 +36,13 @@ function matchesFilters(project, filters) {
 }
 
 export default function ProjectsPage() {
-  const { projects, mapPins, loading, error } = useArchive();
-  const [filters, setFilters] = useState({ cohort: null, query: '', tags: {} });
+  const { projects, mapPins, loading, error, cohort, setCohort } = useArchive();
+  const [localFilters, setLocalFilters] = useState({ query: '', tags: {} });
+  const filters = { ...localFilters, cohort };
+  const setFilters = (next) => {
+    if (next.cohort !== cohort) setCohort(next.cohort ?? null);
+    setLocalFilters({ query: next.query, tags: next.tags });
+  };
   const [view, setView] = useState('grid');
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
 
@@ -61,6 +71,11 @@ export default function ProjectsPage() {
 
   return (
     <div className="projects-page">
+      <Seo
+        title="Projects"
+        path="/projects"
+        description="Browse student projects from the MA Global Collaborative Design Practice archive across London and Kyoto cohorts."
+      />
       <FilterBar
         items={projectsWithTags}
         itemTagsKey="_flatTags"
@@ -68,7 +83,7 @@ export default function ProjectsPage() {
         onFiltersChange={setFilters}
         view={view}
         onViewChange={setView}
-        viewModes={['grid', 'map']}
+        viewModes={['grid', 'map', 'graph']}
         onFilterPanelChange={setFilterPanelOpen}
       />
 
@@ -79,7 +94,7 @@ export default function ProjectsPage() {
               {filtered.map(project => {
                 const coverImg = project.project_photos?.[0]?.url || project.artifacts?.[0]?.file_paths?.[0];
                 const cohortLabel = project._student?.student_year
-                  ? `${project._student.student_year} – ${(project._student.student_year + 1).toString().slice(-2)}`
+                  ? `${project._student.student_year} – ${project._student.student_year + 2}`
                   : '';
                 return (
                   <Link
@@ -89,7 +104,7 @@ export default function ProjectsPage() {
                   >
                     <div className="project-card__image">
                       {coverImg ? (
-                        <img src={coverImg} alt={project.title} loading="lazy" />
+                        <ProgressiveImage src={coverImg} alt={project.title} />
                       ) : (
                         <div className="project-card__placeholder" />
                       )}
@@ -104,7 +119,14 @@ export default function ProjectsPage() {
             </div>
           )}
           {view === 'map' && (
-            <ProjectMapView projects={filtered} mapPins={mapPins} />
+            <Suspense fallback={<ViewLoadingFallback label="Loading map…" />}>
+              <ProjectMapView projects={filtered} mapPins={mapPins} />
+            </Suspense>
+          )}
+          {view === 'graph' && (
+            <Suspense fallback={<ViewLoadingFallback label="Loading graph…" />}>
+              <ProjectForceGraph projects={filtered} />
+            </Suspense>
           )}
         </div>
       )}

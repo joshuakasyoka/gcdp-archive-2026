@@ -38,6 +38,10 @@
 
 .cohort-btn:hover { color: #000; }
 
+.cohort-select {
+  display: none;
+}
+
 .filter-search {
   display: flex;
   align-items: center;
@@ -120,6 +124,7 @@
   align-items: center;
   gap: 6px;
   max-width: 220px;
+  min-width: 0;
   padding: 7px 16px;
   border: 1px solid #ccc;
   border-radius: 100px;
@@ -139,31 +144,51 @@
   flex-shrink: 0;
 }
 
-/* ── Filter icon toggle ── */
-.filter-toggle-icon {
-  width: 28px;
-  height: 28px;
-  border: 1px solid #ccc;
-  border-radius: 50%;
-  background: none;
-  cursor: pointer;
-  display: flex;
+/* ── Filter toggle chip ── */
+.filter-toggle-chip {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  color: #666;
-  flex-shrink: 0;
-  transition: all 0.15s;
-}
-
-.filter-toggle-icon:hover {
-  border-color: #000;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid #ccc;
+  border-radius: 100px;
+  background: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
   color: #000;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s;
 }
 
-.filter-toggle-icon--active {
+.filter-toggle-chip:hover {
+  border-color: #000;
+  background: #f5f5f5;
+}
+
+.filter-toggle-chip--active {
   background: #e8e8e8;
   border-color: #e8e8e8;
   color: #444;
+}
+
+.filter-toggle-chip svg {
+  flex-shrink: 0;
+  color: #666;
+}
+
+.filter-toggle-chip--decorative {
+  cursor: default;
+  pointer-events: none;
+}
+
+.filter-toggle-chip--active svg {
+  color: #444;
+}
+
+.filter-panel--custom {
+  padding: 0 0 8px;
 }
 
 /* ── Expanded panel ── */
@@ -196,7 +221,7 @@
 }
 
 .filter-group-label {
-  font-family: 'Gambarino', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 32px;
   font-weight: 400;
   text-align: center;
@@ -219,6 +244,7 @@
   align-items: center;
   gap: 6px;
   max-width: 220px;
+  min-width: 0;
   padding: 8px 20px;
   border: 1px dashed #aaa;
   border-radius: 100px;
@@ -259,11 +285,148 @@
 
 .filter-tag-label {
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  word-break: break-word;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   min-width: 0;
   text-align: left;
+}
+
+@media (max-width: 640px) {
+  .filter-bar {
+    padding: 0 12px 12px;
+    gap: 10px;
+  }
+
+  .filter-top-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    padding-top: 10px;
+  }
+
+  .filter-cohorts {
+    display: none;
+  }
+
+  .cohort-select {
+    display: block;
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    font-size: 11px;
+    font-family: inherit;
+    color: #000;
+    padding: 2px 18px 2px 0;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 2px center;
+    max-width: 88px;
+    min-width: 0;
+  }
+
+  .cohort-select:focus {
+    outline: none;
+  }
+
+  .filter-search {
+    order: 1;
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    gap: 8px;
+    min-width: 0;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 2px;
+  }
+
+  .filter-search-label {
+    display: none;
+  }
+
+  .filter-search-input {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    font-size: 12px;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .filter-view {
+    order: 1;
+    flex: 0 0 auto;
+    gap: 4px;
+    margin-left: 0;
+  }
+
+  .filter-view-label {
+    display: none;
+  }
+
+  .view-btn,
+  .filter-search-icon-btn {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .filter-toggle-chip {
+    padding: 5px 10px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .view-btn svg,
+  .filter-toggle-chip svg,
+  .filter-search-icon-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .filter-top-end {
+    display: none;
+  }
+
+  .filter-selected-chips {
+    gap: 6px;
+  }
+
+  .active-chip {
+    max-width: 160px;
+    padding: 5px 10px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .active-chip svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .filter-group {
+    margin-bottom: 20px;
+  }
+
+  .filter-group-label {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .filter-group-tags {
+    gap: 6px;
+  }
+
+  .filter-tag {
+    max-width: 160px;
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .filter-panel {
+    padding-bottom: 16px;
+  }
 }
