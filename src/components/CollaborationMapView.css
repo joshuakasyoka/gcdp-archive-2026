@@ -30,6 +30,10 @@
   z-index: 2;
 }
 
+.collab-map-pin {
+  cursor: pointer;
+}
+
 .collab-map-pin-dot {
   width: 10px;
   height: 10px;
@@ -52,11 +56,28 @@
 }
 
 .collab-map-legend-item {
+  position: relative;
   background: rgba(255, 255, 255, 0.92);
-  padding: 8px 12px;
+  padding: 8px 32px 8px 12px;
   border-radius: 2px;
   font-size: 12px;
   pointer-events: auto;
+}
+
+.collab-map-legend-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: none;
+  border: none;
+  padding: 2px;
+  color: #999;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.collab-map-legend-close:hover {
+  color: #000;
 }
 
 .collab-map-legend-item strong {

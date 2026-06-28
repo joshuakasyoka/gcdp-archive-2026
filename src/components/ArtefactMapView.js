@@ -5,6 +5,10 @@ import './ArtefactMapView.css';
 
 const mapboxgl = initMapbox();
 
+function artifactHasPin(artifact, pinId) {
+  return artifact.pin_id === pinId || artifact.pin_ids?.includes(pinId);
+}
+
 export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
   const containerRef = useRef(null);
   const [selected, setSelected] = useState(null);
@@ -14,7 +18,7 @@ export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
     for (const pin of mapPins) {
       byPin[pin.pin_id] = {
         pin,
-        artefacts: artefacts.filter(a => a.pin_id === pin.pin_id),
+        artefacts: artefacts.filter(a => artifactHasPin(a, pin.pin_id)),
       };
     }
     return byPin;

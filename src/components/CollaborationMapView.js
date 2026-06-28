@@ -1,13 +1,19 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { X } from 'lucide-react';
 import { initMapbox, getMapboxToken } from '../mapboxSetup';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './CollaborationMapView.css';
 
 const mapboxgl = initMapbox();
 
+function artifactHasPin(artifact, pinId) {
+  return artifact.pin_id === pinId || artifact.pin_ids?.includes(pinId);
+}
+
 export default function CollaborationMapView({ entries, mapPins }) {
   const containerRef = useRef(null);
+  const [selectedPinId, setSelectedPinId] = useState(null);
 
   const pinData = useMemo(() => {
     const results = [];
@@ -15,7 +21,7 @@ export default function CollaborationMapView({ entries, mapPins }) {
       const linkedProjects = [];
       for (const entry of entries) {
         for (const project of entry.projects || []) {
-          const hasPin = project.artifacts?.some(a => a.pin_id === pin.pin_id);
+          const hasPin = project.artifacts?.some(a => artifactHasPin(a, pin.pin_id));
           if (hasPin && !linkedProjects.some(p => p.project_id === project.project_id)) {
             linkedProjects.push(project);
           }
@@ -53,6 +59,10 @@ export default function CollaborationMapView({ entries, mapPins }) {
         const el = document.createElement('div');
         el.className = 'collab-map-pin';
         el.innerHTML = '<div class="collab-map-pin-dot"></div>';
+        el.addEventListener('click', (event) => {
+          event.stopPropagation();
+          setSelectedPinId(pin.pin_id);
+        });
 
         new mapboxgl.Marker({ element: el })
           .setLngLat([pin.lng, pin.lat])
@@ -63,24 +73,36 @@ export default function CollaborationMapView({ entries, mapPins }) {
     return () => map.remove();
   }, [pinData]);
 
+  useEffect(() => {
+    setSelectedPinId(null);
+  }, [pinData]);
+
+  const selected = pinData.find(({ pin }) => pin.pin_id === selectedPinId);
+
   return (
     <div className="collab-map-view">
       {!getMapboxToken() && (
         <div className="collab-map-error">Map unavailable — Mapbox token not configured.</div>
       )}
       <div ref={containerRef} className="collab-map-container" />
-      {pinData.length > 0 && (
+      {selected && (
         <div className="collab-map-legend">
-          {pinData.map(({ pin, projects }) => (
-            <div key={pin.pin_id} className="collab-map-legend-item">
-              <strong>{pin.title}</strong>
-              {projects.map(project => (
-                <Link key={project.project_id} to={`/projects/${project.project_id}`} className="collab-map-legend-link">
-                  {project.title}
-                </Link>
-              ))}
-            </div>
-          ))}
+          <div className="collab-map-legend-item">
+            <button
+              type="button"
+              className="collab-map-legend-close"
+              onClick={() => setSelectedPinId(null)}
+              aria-label="Close"
+            >
+              <X size={14} strokeWidth={1.5} />
+            </button>
+            <strong>{selected.pin.title}</strong>
+            {selected.projects.map(project => (
+              <Link key={project.project_id} to={`/projects/${project.project_id}`} className="collab-map-legend-link">
+                {project.title}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>

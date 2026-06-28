@@ -6,6 +6,10 @@ import './ArtefactMapView.css';
 
 const mapboxgl = initMapbox();
 
+function artifactHasPin(artifact, pinId) {
+  return artifact.pin_id === pinId || artifact.pin_ids?.includes(pinId);
+}
+
 export default function ProjectMapView({ projects, mapPins }) {
   const containerRef = useRef(null);
   const [selected, setSelected] = useState(null);
@@ -16,7 +20,7 @@ export default function ProjectMapView({ projects, mapPins }) {
       byPin[pin.pin_id] = {
         pin,
         projects: projects.filter(p =>
-          p.artifacts?.some(a => a.pin_id === pin.pin_id)
+          p.artifacts?.some(a => artifactHasPin(a, pin.pin_id))
         ),
       };
     }
