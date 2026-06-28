@@ -69,6 +69,10 @@
 
 .filter-search-input:focus { border-bottom-color: #000; }
 
+.filter-mobile-reveal {
+  display: contents;
+}
+
 .filter-view {
   display: flex;
   align-items: center;
@@ -293,7 +297,7 @@
 
 @media (max-width: 640px) {
   .filter-bar {
-    padding: 0 12px 12px;
+    padding: 0 24px 12px;
     gap: 10px;
   }
 
@@ -339,7 +343,11 @@
     min-width: 0;
     align-items: center;
     border-bottom: 1px solid #ccc;
-    padding-bottom: 2px;
+    padding-bottom: 6px;
+  }
+
+  .filter-mobile-reveal {
+    display: none;
   }
 
   .filter-search-label {
@@ -357,10 +365,13 @@
   }
 
   .filter-view {
-    order: 1;
+    display: flex;
+    order: 2;
     flex: 0 0 auto;
     gap: 4px;
     margin-left: 0;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 6px;
   }
 
   .filter-view-label {

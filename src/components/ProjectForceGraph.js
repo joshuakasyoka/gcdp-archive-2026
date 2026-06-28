@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as d3 from 'd3';
 import { isPriorityTag } from '../config/priorityTags';
@@ -7,6 +7,8 @@ import './ArtefactForceGraph.css';
 const CARD_W = 160;
 const CARD_H = 130;
 const IMAGE_H = 96;
+const BATCH_SIZE = 30;
+const REVEAL_THROTTLE_MS = 500;
 
 const LINK_CATEGORIES = [
   { key: 'themes', label: 'Theme' },
@@ -30,6 +32,29 @@ function nodeId(linkEnd) {
   return typeof linkEnd === 'object' ? linkEnd.id : linkEnd;
 }
 
+const MAX_CONNECTIONS_PER_NODE = 3;
+
+function limitLinksPerNode(links, maxPerNode) {
+  // Greedy, strength-first selection that guarantees no node ends up with
+  // more than maxPerNode connections in the final graph (a per-node cap
+  // computed independently per endpoint can't make that guarantee, since a
+  // weak link can still get pulled in by its other endpoint's own top picks).
+  const degree = new Map();
+  const kept = [];
+  for (const link of [...links].sort((a, b) => b.strength - a.strength)) {
+    const sId = nodeId(link.source);
+    const tId = nodeId(link.target);
+    const sDeg = degree.get(sId) || 0;
+    const tDeg = degree.get(tId) || 0;
+    if (sDeg < maxPerNode && tDeg < maxPerNode) {
+      kept.push(link);
+      degree.set(sId, sDeg + 1);
+      degree.set(tId, tDeg + 1);
+    }
+  }
+  return kept;
+}
+
 function layoutNodesInCircle(nodes, width, height) {
   const cx = width / 2;
   const cy = height / 2;
@@ -50,12 +75,25 @@ function layoutNodesInCircle(nodes, width, height) {
 export default function ProjectForceGraph({ projects }) {
   const svgRef = useRef(null);
   const simulationRef = useRef(null);
+  const transformRef = useRef(null);
+  const lastRevealRef = useRef(0);
   const navigate = useNavigate();
+  const [visibleCount, setVisibleCount] = useState(Math.min(BATCH_SIZE, projects.length));
+
+  useEffect(() => {
+    setVisibleCount(Math.min(BATCH_SIZE, projects.length));
+    transformRef.current = null;
+  }, [projects]);
+
+  const visibleProjects = useMemo(
+    () => projects.slice(0, visibleCount),
+    [projects, visibleCount]
+  );
 
   const buildGraph = useCallback(() => {
-    if (!projects.length) return { nodes: [], links: [] };
+    if (!visibleProjects.length) return { nodes: [], links: [] };
 
-    const nodes = projects.map(p => ({
+    const nodes = visibleProjects.map(p => ({
       id: p.project_id,
       project: p,
     }));
@@ -66,8 +104,8 @@ export default function ProjectForceGraph({ projects }) {
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const { shared, label } = getSharedLinkInfo(
-          projects[i]._flatTags,
-          projects[j]._flatTags,
+          visibleProjects[i]._flatTags,
+          visibleProjects[j]._flatTags,
         );
         if (shared.length >= 2) {
           const key = `${nodes[i].id}-${nodes[j].id}`;
@@ -84,8 +122,8 @@ export default function ProjectForceGraph({ projects }) {
       }
     }
 
-    return { nodes, links };
-  }, [projects]);
+    return { nodes, links: limitLinksPerNode(links, MAX_CONNECTIONS_PER_NODE) };
+  }, [visibleProjects]);
 
   useEffect(() => {
     const svg = d3.select(svgRef.current);
@@ -97,15 +135,28 @@ export default function ProjectForceGraph({ projects }) {
     const width = svgRef.current.clientWidth || 900;
     const height = svgRef.current.clientHeight || 650;
 
+    const g = svg.append('g');
+
     const zoom = d3.zoom()
       .scaleExtent([0.2, 3])
       .on('zoom', (event) => {
+        transformRef.current = event.transform;
         g.attr('transform', event.transform);
+
+        // d3-zoom's wheel handler calls stopImmediatePropagation, so a
+        // separate native 'wheel' listener never fires — detect the wheel
+        // gesture here instead, via the zoom event it triggers.
+        if (event.sourceEvent?.type === 'wheel' && visibleCount < projects.length) {
+          const now = Date.now();
+          if (now - lastRevealRef.current >= REVEAL_THROTTLE_MS) {
+            lastRevealRef.current = now;
+            setVisibleCount(c => Math.min(c + BATCH_SIZE, projects.length));
+          }
+        }
       });
 
     svg.call(zoom);
-
-    const g = svg.append('g');
+    if (transformRef.current) svg.call(zoom.transform, transformRef.current);
 
     layoutNodesInCircle(nodes, width, height);
 
@@ -266,11 +317,16 @@ export default function ProjectForceGraph({ projects }) {
     });
 
     return () => simulation.stop();
-  }, [buildGraph, navigate]);
+  }, [buildGraph, navigate, projects.length, visibleCount]);
 
   return (
     <div className="force-graph">
       <svg ref={svgRef} className="force-graph-svg" />
+      {visibleCount < projects.length && (
+        <div className="force-graph-reveal-hint">
+          Showing {visibleCount} of {projects.length} — scroll to load more
+        </div>
+      )}
     </div>
   );
 }

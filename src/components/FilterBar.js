@@ -109,7 +109,7 @@ export default function FilterBar({
   return (
     <div className="filter-bar">
       {/* Row 1: cohorts + search + view toggle */}
-      <div className="filter-top-row">
+      <div className={clsx('filter-top-row', showFilters && 'filter-top-row--filters-open')}>
         <div className="filter-cohorts">
           {leftSlot || COHORTS.map(c => (
             <button
@@ -123,18 +123,6 @@ export default function FilterBar({
         </div>
 
         <div className="filter-search">
-          <select
-            className="cohort-select"
-            value={String(currentLeftValue ?? '')}
-            onChange={handleLeftSelectChange}
-            aria-label={leftOptions ? 'Sort by' : 'Filter by year'}
-          >
-            {leftChoices.map(c => (
-              <option key={c.label} value={String(c.value ?? '')}>
-                {c.label}
-              </option>
-            ))}
-          </select>
           <label className="filter-search-label">Search:</label>
           <input
             type="text"
@@ -160,6 +148,21 @@ export default function FilterBar({
               </span>
             )
           )}
+        </div>
+
+        <div className="filter-mobile-reveal">
+          <select
+            className="cohort-select"
+            value={String(currentLeftValue ?? '')}
+            onChange={handleLeftSelectChange}
+            aria-label={leftOptions ? 'Sort by' : 'Filter by year'}
+          >
+            {leftChoices.map(c => (
+              <option key={c.label} value={String(c.value ?? '')}>
+                {c.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {showViewToggle ? (

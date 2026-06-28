@@ -1,9 +1,25 @@
 .force-graph {
+  position: relative;
   width: 100%;
   height: calc(100vh - 180px);
   min-height: 600px;
   overflow: hidden;
   background: #fafafa;
+}
+
+.force-graph-reveal-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
 }
 
 .force-graph-svg {
