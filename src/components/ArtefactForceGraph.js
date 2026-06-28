@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 import { isPriorityTag } from '../config/priorityTags';
+import { formatCollaboratorName } from '../utils/collaborations';
 import './ArtefactForceGraph.css';
 
 const CARD_W = 160;
@@ -24,7 +25,7 @@ function getSharedLinkInfo(tagsA, tagsB) {
       if (b.includes(t)) shared.push(t);
     }
   }
-  return { shared, label: shared.join(' · ') };
+  return { shared, label: shared.map(formatCollaboratorName).join(' · ') };
 }
 
 function nodeId(linkEnd) {

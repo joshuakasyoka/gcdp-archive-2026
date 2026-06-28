@@ -36,17 +36,15 @@ export default function StudentDetailPage() {
         type="profile"
       />
       <Link to="/collaborations" className="page-back-link">&lt; Back</Link>
-      <div className="student-detail-header">
-        <div className="student-detail-photo">
-          {project?.project_photos?.[0]?.url ? (
+      <div className={`student-detail-header${project?.project_photos?.[0]?.url ? '' : ' student-detail-header--no-photo'}`}>
+        {project?.project_photos?.[0]?.url && (
+          <div className="student-detail-photo">
             <ProgressiveImage src={project.project_photos[0].url} alt={student.name.display_name} />
-          ) : (
-            <div className="student-detail-photo-placeholder" />
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="student-detail-info">
-          <div className="student-detail-cohort">{student.program} · {cohortLabel}</div>
+          <div className="student-detail-cohort">Cohort · {cohortLabel}</div>
           <h1 className="student-detail-name">{student.name.display_name}</h1>
           {student.about && <p className="student-detail-about">{student.about}</p>}
 

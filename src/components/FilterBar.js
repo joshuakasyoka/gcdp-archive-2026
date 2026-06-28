@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { LayoutGrid, List, MapPin, Network, Search, X, SlidersHorizontal } from 'lucide-react';
 import clsx from 'clsx';
 import { isPriorityTag } from '../config/priorityTags';
+import { formatCollaboratorName } from '../utils/collaborations';
 import './FilterBar.css';
 
 const COHORTS = [
@@ -197,7 +198,7 @@ export default function FilterBar({
               className="active-chip"
               onClick={() => removeChip(cat, tag)}
             >
-              <span className="filter-tag-label">{tag}</span> <X size={12} strokeWidth={2} />
+              <span className="filter-tag-label">{formatCollaboratorName(tag)}</span> <X size={12} strokeWidth={2} />
             </button>
           ))}
           {showFilters && (
@@ -238,7 +239,7 @@ export default function FilterBar({
                       className="filter-tag"
                       onClick={() => toggleTag(cat, tag)}
                     >
-                      <span className="filter-tag-label">{tag}</span>
+                      <span className="filter-tag-label">{formatCollaboratorName(tag)}</span>
                     </button>
                   ))}
                   {hasMore && (

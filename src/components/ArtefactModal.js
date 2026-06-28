@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { X, ArrowUpRight } from 'lucide-react';
 import ProgressiveImage from './ProgressiveImage';
+import { formatCollaboratorName } from '../utils/collaborations';
 import './ArtefactModal.css';
 
 export default function ArtefactModal({ artefact, onClose }) {
@@ -99,7 +100,7 @@ export default function ArtefactModal({ artefact, onClose }) {
                 <div className="modal-chips">
                   {tags.collaborators.map(t => (
                     <span key={t} className="modal-chip modal-chip--collab">
-                      <span className="chip-label">{t}</span>
+                      <span className="chip-label">{formatCollaboratorName(t)}</span>
                       <ArrowUpRight size={11} strokeWidth={1.5} />
                     </span>
                   ))}
@@ -111,7 +112,7 @@ export default function ArtefactModal({ artefact, onClose }) {
               <div className="modal-section">
                 <div className="modal-section-label">Materials</div>
                 <div className="modal-chips">
-                  {tags.materials.map(t => <span key={t} className="modal-chip">{t}</span>)}
+                  {tags.materials.map(t => <span key={t} className="modal-chip">{formatCollaboratorName(t)}</span>)}
                 </div>
               </div>
             )}
@@ -120,7 +121,7 @@ export default function ArtefactModal({ artefact, onClose }) {
               <div className="modal-section">
                 <div className="modal-section-label">Methods</div>
                 <div className="modal-chips">
-                  {tags.methods.map(t => <span key={t} className="modal-chip">{t}</span>)}
+                  {tags.methods.map(t => <span key={t} className="modal-chip">{formatCollaboratorName(t)}</span>)}
                 </div>
               </div>
             )}

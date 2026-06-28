@@ -23,6 +23,7 @@ export default function App() {
               <Routes>
               <Route path="/" element={<ArtefactsPage />} />
               <Route path="/artefacts" element={<Navigate to="/" replace />} />
+              <Route path="/artefacts/:artefactId" element={<ArtefactsPage />} />
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
               <Route path="/collaborations" element={<CollaborationsPage />} />

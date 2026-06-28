@@ -7,6 +7,7 @@ import ArtefactModal from '../components/ArtefactModal';
 import '../components/ArtefactModal.css';
 import ArtefactCard from '../components/ArtefactCard';
 import ProgressiveImage from '../components/ProgressiveImage';
+import { formatCollaboratorName } from '../utils/collaborations';
 import './ProjectDetailPage.css';
 
 const PREVIEW_COUNT = 3;
@@ -155,7 +156,7 @@ export default function ProjectDetailPage() {
                   tags={aggregatedTags[key]}
                   expanded={expandedCats[key]}
                   onToggle={() => setExpandedCats(prev => ({ ...prev, [key]: !prev[key] }))}
-                  renderChip={t => <span key={t} className="project-tag-chip"><span className="chip-label">{t}</span></span>}
+                  renderChip={t => <span key={t} className="project-tag-chip"><span className="chip-label">{formatCollaboratorName(t)}</span></span>}
                 />
               </div>
               )
@@ -179,7 +180,7 @@ export default function ProjectDetailPage() {
                 onToggle={() => setExpandedCats(prev => ({ ...prev, collaborators: !prev.collaborators }))}
                 renderChip={t => (
                   <span key={t} className="project-tag-chip project-tag-chip--collab">
-                    <span className="chip-label">{t}</span>
+                    <span className="chip-label">{formatCollaboratorName(t)}</span>
                     <ArrowUpRight size={11} strokeWidth={1.5} />
                   </span>
                 )}

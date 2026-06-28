@@ -11,17 +11,15 @@
   align-items: start;
 }
 
+.student-detail-header--no-photo {
+  grid-template-columns: 1fr;
+}
+
 .student-detail-photo img {
   width: 100%;
   aspect-ratio: 3/4;
   object-fit: cover;
   display: block;
-}
-
-.student-detail-photo-placeholder {
-  width: 100%;
-  aspect-ratio: 3/4;
-  background: #d8d8d8;
 }
 
 .student-detail-cohort {

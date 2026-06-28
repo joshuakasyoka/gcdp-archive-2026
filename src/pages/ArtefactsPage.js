@@ -1,4 +1,5 @@
-import React, { useState, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useArchive } from '../contexts/ArchiveContext';
 import Seo from '../components/Seo';
 import FilterBar from '../components/FilterBar';
@@ -50,6 +51,8 @@ function matchesFilters(artefact, filters) {
 
 export default function ArtefactsPage() {
   const { artefacts, mapPins, loading, error, cohort, setCohort } = useArchive();
+  const { artefactId } = useParams();
+  const navigate = useNavigate();
   const [localFilters, setLocalFilters] = useState({ query: '', tags: {} });
   const filters = { ...localFilters, cohort };
   const setFilters = (next) => {
@@ -66,6 +69,23 @@ export default function ArtefactsPage() {
     [artefacts, filters]
   );
 
+  useEffect(() => {
+    if (!artefactId) {
+      setSelected(null);
+      return;
+    }
+    const match = artefacts.find(a => a.artifact_id === artefactId);
+    setSelected(match || null);
+  }, [artefactId, artefacts]);
+
+  function selectArtefact(artefact) {
+    navigate(`/artefacts/${artefact.artifact_id}`);
+  }
+
+  function closeArtefact() {
+    navigate('/');
+  }
+
   const closeIntro = () => {
     dismissArchiveIntro();
     setIntroOpen(false);
@@ -76,21 +96,34 @@ export default function ArtefactsPage() {
 
   return (
     <div className="artefacts-page">
-      <Seo
-        description={LANDING_DESCRIPTION}
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'WebSite',
-          name: 'MA GCDP Digital Archive',
-          url: SITE_URL,
-          description: LANDING_DESCRIPTION,
-          potentialAction: {
-            '@type': 'SearchAction',
-            target: `${SITE_URL}/`,
-            'query-input': 'required name=search_term_string',
-          },
-        }}
-      />
+      {selected ? (
+        <Seo
+          title={selected.title}
+          path={`/artefacts/${selected.artifact_id}`}
+          description={
+            selected.description ||
+            `Artefact by ${selected._student?.name?.display_name || 'a GCDP student'} in the MA Global Collaborative Design Practice archive.`
+          }
+          image={selected.file_paths?.[0]}
+          type="article"
+        />
+      ) : (
+        <Seo
+          description={LANDING_DESCRIPTION}
+          jsonLd={{
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'MA GCDP Digital Archive',
+            url: SITE_URL,
+            description: LANDING_DESCRIPTION,
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: `${SITE_URL}/`,
+              'query-input': 'required name=search_term_string',
+            },
+          }}
+        />
+      )}
       <FilterBar
         items={artefacts}
         filters={filters}
@@ -103,16 +136,16 @@ export default function ArtefactsPage() {
       {!filterPanelOpen && (
         <div className="artefacts-content">
           {view === 'grid' && (
-            <ArtefactGrid artefacts={filtered} onSelect={setSelected} columns={4} />
+            <ArtefactGrid artefacts={filtered} onSelect={selectArtefact} columns={4} />
           )}
           {view === 'map' && (
             <Suspense fallback={<ViewLoadingFallback label="Loading map…" />}>
-              <ArtefactMapView artefacts={filtered} mapPins={mapPins} onSelect={setSelected} />
+              <ArtefactMapView artefacts={filtered} mapPins={mapPins} onSelect={selectArtefact} />
             </Suspense>
           )}
           {view === 'graph' && (
             <Suspense fallback={<ViewLoadingFallback label="Loading graph…" />}>
-              <ArtefactForceGraph artefacts={filtered} onSelect={setSelected} />
+              <ArtefactForceGraph artefacts={filtered} onSelect={selectArtefact} />
             </Suspense>
           )}
         </div>
@@ -123,7 +156,7 @@ export default function ArtefactsPage() {
       )}
 
       {selected && (
-        <ArtefactModal artefact={selected} onClose={() => setSelected(null)} />
+        <ArtefactModal artefact={selected} onClose={closeArtefact} />
       )}
     </div>
   );
