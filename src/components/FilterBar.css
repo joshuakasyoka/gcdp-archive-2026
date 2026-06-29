@@ -399,19 +399,20 @@
   }
 
   .filter-selected-chips {
-    gap: 6px;
+    gap: 8px;
   }
 
   .active-chip {
-    max-width: 160px;
-    padding: 5px 10px;
-    font-size: 11px;
-    gap: 4px;
+    max-width: 220px;
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: 13px;
+    gap: 6px;
   }
 
   .active-chip svg {
-    width: 10px;
-    height: 10px;
+    width: 14px;
+    height: 14px;
   }
 
   .filter-group {
@@ -424,13 +425,14 @@
   }
 
   .filter-group-tags {
-    gap: 6px;
+    gap: 8px;
   }
 
   .filter-tag {
-    max-width: 160px;
-    padding: 6px 12px;
-    font-size: 11px;
+    max-width: 220px;
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: 13px;
   }
 
   .filter-panel {
