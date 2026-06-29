@@ -25,14 +25,24 @@
   width: 100%;
   margin: 0;
   min-height: 0;
+  flex-shrink: 0;
   background: #fafafa;
 }
 
 .intro-modal-copy {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  min-height: 0;
+  flex: 1 1 auto;
   padding: 20px var(--intro-modal-inset) 24px;
+}
+
+.intro-modal-copy-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .intro-modal-title {
@@ -61,7 +71,8 @@
 
 .intro-modal-enter {
   align-self: flex-start;
-  margin-top: 4px;
+  flex-shrink: 0;
+  margin-top: 16px;
   border: 1px solid #000;
   background: transparent;
   color: #000;

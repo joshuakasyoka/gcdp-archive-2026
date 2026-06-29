@@ -254,7 +254,12 @@ export default function ProjectDetailPage() {
             {project.artifacts.map(a => (
               <ArtefactCard
                 key={a.artifact_id}
-                artefact={{ ...a, _project: project, _student: a._student || project._student }}
+                artefact={{
+                  ...a,
+                  _project: project,
+                  _student: a._student || project._student,
+                  _students: a._students?.length ? a._students : project._students,
+                }}
                 onClick={setSelected}
               />
             ))}

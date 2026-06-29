@@ -20,21 +20,26 @@ function normalizeTitle(title) {
   return (title || '').trim().toLowerCase();
 }
 
-function flattenArtefacts(students) {
+// Built from the already-merged `projects` list (see flattenProjects) so that
+// artefacts shared by multiple collaborating students carry every contributor
+// in `_students`, instead of only whichever student happened to load first.
+function flattenArtefacts(projects) {
   const artefacts = [];
   const seen = new Set();
-  for (const student of students) {
-    for (const project of student.projects || []) {
-      for (const artifact of project.artifacts || []) {
-        const key = normalizeTitle(artifact.title);
-        if (!key || key === 'zine template prototype' || seen.has(key)) continue;
-        seen.add(key);
-        artefacts.push({
-          ...artifact,
-          _student: student,
-          _project: project,
-        });
-      }
+  for (const project of projects) {
+    for (const artifact of project.artifacts || []) {
+      const key = normalizeTitle(artifact.title);
+      if (!key || key === 'zine template prototype') continue;
+      const uniqueKey = `${project.project_id}::${key}`;
+      if (seen.has(uniqueKey)) continue;
+      seen.add(uniqueKey);
+      const students = artifact._students || project._students || [project._student];
+      artefacts.push({
+        ...artifact,
+        _student: students[0],
+        _students: students,
+        _project: project,
+      });
     }
   }
   return artefacts;
@@ -52,7 +57,7 @@ function flattenProjects(students) {
       if (!existing) {
         const merged = {
           ...project,
-          artifacts: [...(project.artifacts || [])],
+          artifacts: (project.artifacts || []).map(art => ({ ...art, _students: [student] })),
           project_photos: [...(project.project_photos || [])],
           _student: student,
           _students: [student],
@@ -63,15 +68,22 @@ function flattenProjects(students) {
       }
 
       // Same-titled project owned by another collaborating student — merge in
-      // their unique artefacts/photos instead of discarding their contribution.
+      // their artefacts. If an artefact with the same title already exists
+      // (a genuinely shared/co-authored piece), record this student as an
+      // additional contributor instead of dropping their copy entirely.
       existing._students.push(student);
 
-      const seenArtTitles = new Set(existing.artifacts.map(a => normalizeTitle(a.title)));
+      const artByTitle = new Map(existing.artifacts.map(a => [normalizeTitle(a.title), a]));
       for (const art of project.artifacts || []) {
         const artKey = normalizeTitle(art.title);
-        if (artKey && !seenArtTitles.has(artKey)) {
-          seenArtTitles.add(artKey);
-          existing.artifacts.push({ ...art, _student: student });
+        if (!artKey) continue;
+        const existingArt = artByTitle.get(artKey);
+        if (existingArt) {
+          existingArt._students.push(student);
+        } else {
+          const newArt = { ...art, _students: [student] };
+          existing.artifacts.push(newArt);
+          artByTitle.set(artKey, newArt);
         }
       }
 
@@ -177,7 +189,8 @@ export function ArchiveProvider({ children }) {
       fetch('/collaboratorLinks.json').then(r => (r.ok ? r.json() : {})).catch(() => ({})),
     ])
       .then(([studs, pins, glossaryTerms, links]) => {
-        const arts = flattenArtefacts(studs);
+        const projs = flattenProjects(studs);
+        const arts = flattenArtefacts(projs);
         const defs = {};
         for (const entry of glossaryTerms || []) {
           if (entry?.term && entry?.definition) {
@@ -186,7 +199,7 @@ export function ArchiveProvider({ children }) {
         }
         setStudents(studs);
         setArtefacts(arts);
-        setProjects(flattenProjects(studs));
+        setProjects(projs);
         setGlossary(buildGlossary(glossaryTerms, arts));
         setGlossaryDefinitions(defs);
         setGlossarySources(buildGlossarySources(arts));

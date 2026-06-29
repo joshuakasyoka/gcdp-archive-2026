@@ -62,18 +62,23 @@ export default function ArtefactModal({ artefact, onClose }) {
               <p className="modal-description">{artefact.description}</p>
             )}
 
-            {artefact._student?.name?.display_name && (
+            {(artefact._students?.length ? artefact._students : [artefact._student]).filter(s => s?.name?.display_name).length > 0 && (
               <div className="modal-section">
                 <div className="modal-section-label">Student</div>
                 <div className="modal-chips">
-                  <Link
-                    to={`/students/${artefact._student.student_id}`}
-                    className="modal-chip modal-chip--student"
-                    onClick={onClose}
-                  >
-                    <span className="chip-label">{artefact._student.name.display_name}</span>
-                    <ArrowUpRight size={11} strokeWidth={1.5} />
-                  </Link>
+                  {(artefact._students?.length ? artefact._students : [artefact._student])
+                    .filter(s => s?.name?.display_name)
+                    .map(s => (
+                      <Link
+                        key={s.student_id}
+                        to={`/students/${s.student_id}`}
+                        className="modal-chip modal-chip--student"
+                        onClick={onClose}
+                      >
+                        <span className="chip-label">{s.name.display_name}</span>
+                        <ArrowUpRight size={11} strokeWidth={1.5} />
+                      </Link>
+                    ))}
                 </div>
               </div>
             )}
