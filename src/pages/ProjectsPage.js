@@ -48,7 +48,11 @@ export default function ProjectsPage() {
 
   const projectsWithTags = useMemo(() =>
     projects
-      .filter(p => p._student?.student_id !== 'student_14' && p.artifacts?.length > 0)
+      .filter(p =>
+        p._student?.student_id !== 'student_14' &&
+        p.artifacts?.length > 0 &&
+        (p.project_photos?.[0]?.url || p.artifacts.some(a => a.file_paths?.length > 0))
+      )
       .map(p => ({
         ...p,
         _flatTags: p.artifacts.reduce((acc, art) => {

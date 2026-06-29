@@ -65,7 +65,7 @@ export default function ArtefactsPage() {
   const [introOpen, setIntroOpen] = useState(() => !isArchiveIntroDismissed());
 
   const filtered = useMemo(
-    () => artefacts.filter(a => matchesFilters(a, filters)),
+    () => artefacts.filter(a => a.file_paths?.length > 0 && matchesFilters(a, filters)),
     [artefacts, filters]
   );
 

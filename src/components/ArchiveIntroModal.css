@@ -50,6 +50,15 @@
   margin: 0;
 }
 
+.intro-modal-text--links a {
+  color: #222;
+  text-decoration: underline;
+}
+
+.intro-modal-text--links a:hover {
+  color: #000;
+}
+
 .intro-modal-enter {
   align-self: flex-start;
   margin-top: 4px;

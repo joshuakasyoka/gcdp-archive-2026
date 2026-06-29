@@ -48,14 +48,32 @@ export default function ArchiveIntroModal({ artefacts, onClose }) {
         <div className="intro-modal-copy">
           <h2 id="archive-intro-title" className="intro-modal-title">About the archive</h2>
           <p className="intro-modal-text">
-            This archive is a living record of the work produced by students of the MA Global
-            Collaborative Design Practice: a growing collection of projects, artefacts, methods, and
-            collaborations that spans cohorts and continues to expand with each graduating year.
+            A growing archive of work produced by students of MA/MEng Global Collaborative Design
+            Practice, a double-degree programme jointly run by the University of the Arts London
+            and Kyoto Institute of Technology.
           </p>
           <p className="intro-modal-text">
-            Browse by project, by theme, by material, or by the places across London and Kyoto where
-            this work has taken root. Artefacts connect through shared tags — explore the grid, map,
-            or graph views to discover relationships across the collection.
+            Explore the archive through four lenses: Artefacts – individual objects, tools and
+            outputs; Projects – work organised by cohort and location; Collaborations – the
+            communities, organisations and partners students have worked with across London and
+            Kyoto; Glossary – the methods and themes that run across the archive. Switch between
+            grid, map and graph views to explore different connections.
+          </p>
+
+          <p className="intro-modal-text intro-modal-text--links">
+            For information about the programme, admissions and upcoming events, visit the{' '}
+            <a
+              href="https://www.arts.ac.uk/subjects/communication-and-graphic-design/postgraduate/ma-global-collaborative-design-practice-camberwell"
+              target="_blank"
+              rel="noreferrer"
+            >
+              MA GCDP
+            </a>{' '}
+            course page and Instagram:
+            <br />
+            <a href="https://www.instagram.com/ual_ma_gcdp" target="_blank" rel="noreferrer">
+              @ual_ma_gcdp
+            </a>
           </p>
 
           <button type="button" className="intro-modal-enter" onClick={onClose}>
