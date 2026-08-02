@@ -1,6 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { useArchive } from '../contexts/ArchiveContext';
 import Seo from '../components/Seo';
 import ArtefactModal from '../components/ArtefactModal';
@@ -8,7 +10,10 @@ import '../components/ArtefactModal.css';
 import ArtefactCard from '../components/ArtefactCard';
 import ProgressiveImage from '../components/ProgressiveImage';
 import { formatCollaboratorName } from '../utils/collaborations';
+import { bindChipHover } from '../utils/chipMotion';
 import './ProjectDetailPage.css';
+
+gsap.registerPlugin(useGSAP);
 
 const PREVIEW_COUNT = 3;
 
@@ -38,9 +43,11 @@ export default function ProjectDetailPage() {
   const { projectId } = useParams();
   const { projects, loading } = useArchive();
   const [selected, setSelected] = useState(null);
+  const [modalOriginRect, setModalOriginRect] = useState(null);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [expandedCats, setExpandedCats] = useState({});
   const [showAllMeta, setShowAllMeta] = useState(false);
+  const pageRef = useRef(null);
 
   const project = projects.find(p => p.project_id === projectId);
 
@@ -58,6 +65,12 @@ export default function ProjectDetailPage() {
     }
     return Object.fromEntries(Object.entries(cats).map(([k, v]) => [k, [...v]]));
   }, [project]);
+
+  useGSAP(() => {
+    const root = pageRef.current;
+    if (!root) return undefined;
+    return bindChipHover(root, { scale: 1.04, y: -1.5 });
+  }, { scope: pageRef, dependencies: [projectId, showAllMeta] });
 
   if (loading) return <div className="page-loading">Loading…</div>;
   if (!project) {
@@ -89,7 +102,7 @@ export default function ProjectDetailPage() {
     );
 
   return (
-    <div className="project-detail">
+    <div className="project-detail" ref={pageRef}>
       <Seo
         title={project.title}
         path={`/projects/${project.project_id}`}
@@ -260,7 +273,20 @@ export default function ProjectDetailPage() {
                   _student: a._student || project._student,
                   _students: a._students?.length ? a._students : project._students,
                 }}
-                onClick={setSelected}
+                onClick={(artefact, el) => {
+                  const rect = el?.getBoundingClientRect?.();
+                  setModalOriginRect(
+                    rect
+                      ? {
+                          top: rect.top,
+                          left: rect.left,
+                          width: rect.width,
+                          height: rect.height,
+                        }
+                      : null
+                  );
+                  setSelected(artefact);
+                }}
               />
             ))}
           </div>
@@ -268,7 +294,14 @@ export default function ProjectDetailPage() {
       )}
 
       {selected && (
-        <ArtefactModal artefact={selected} onClose={() => setSelected(null)} />
+        <ArtefactModal
+          artefact={selected}
+          originRect={modalOriginRect}
+          onClose={() => {
+            setSelected(null);
+            setModalOriginRect(null);
+          }}
+        />
       )}
     </div>
   );

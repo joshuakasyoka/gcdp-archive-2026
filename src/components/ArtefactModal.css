@@ -7,6 +7,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  will-change: opacity;
 }
 
 .modal-content {
@@ -18,6 +19,8 @@
   position: relative;
   border-radius: 2px;
   display: flex;
+  will-change: transform;
+  transform-origin: center center;
 }
 
 .modal-body {
@@ -31,6 +34,7 @@
   position: relative;
   background: #f0f0f0;
   overflow: hidden;
+  transform-origin: center center;
 }
 
 .modal-image img,
@@ -171,6 +175,7 @@
   background: #fff;
   max-width: 100%;
   min-width: 0;
+  transform-origin: center center;
 }
 
 .modal-chip svg {

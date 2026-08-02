@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useArchive } from '../contexts/ArchiveContext';
 import Seo from '../components/Seo';
 import FilterBar from '../components/FilterBar';
@@ -53,6 +53,7 @@ export default function ArtefactsPage() {
   const { artefacts, mapPins, loading, error, cohort, setCohort } = useArchive();
   const { artefactId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [localFilters, setLocalFilters] = useState({ query: '', tags: {} });
   const filters = { ...localFilters, cohort };
   const setFilters = (next) => {
@@ -63,6 +64,7 @@ export default function ArtefactsPage() {
   const [selected, setSelected] = useState(null);
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [introOpen, setIntroOpen] = useState(() => !isArchiveIntroDismissed());
+  const modalOriginRect = location.state?.originRect || null;
 
   const filtered = useMemo(
     () => artefacts.filter(a => a.file_paths?.length > 0 && matchesFilters(a, filters)),
@@ -78,12 +80,24 @@ export default function ArtefactsPage() {
     setSelected(match || null);
   }, [artefactId, artefacts]);
 
-  function selectArtefact(artefact) {
-    navigate(`/artefacts/${artefact.artifact_id}`);
+  function selectArtefact(artefact, originEl) {
+    const rect = originEl?.getBoundingClientRect?.();
+    navigate(`/artefacts/${artefact.artifact_id}`, {
+      state: rect
+        ? {
+            originRect: {
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height,
+            },
+          }
+        : undefined,
+    });
   }
 
   function closeArtefact() {
-    navigate('/');
+    navigate('/', { state: {} });
   }
 
   const closeIntro = () => {
@@ -156,7 +170,11 @@ export default function ArtefactsPage() {
       )}
 
       {selected && (
-        <ArtefactModal artefact={selected} onClose={closeArtefact} />
+        <ArtefactModal
+          artefact={selected}
+          onClose={closeArtefact}
+          originRect={modalOriginRect}
+        />
       )}
     </div>
   );

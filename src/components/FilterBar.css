@@ -100,7 +100,8 @@
   align-items: center;
   justify-content: center;
   color: #666;
-  transition: all 0.15s;
+  transform-origin: center center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .view-btn--active {
@@ -137,7 +138,8 @@
   font-family: inherit;
   cursor: pointer;
   color: #000;
-  transition: background 0.15s;
+  transform-origin: center center;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .active-chip:hover {
@@ -163,7 +165,8 @@
   color: #000;
   flex-shrink: 0;
   line-height: 1;
-  transition: background 0.15s, border-color 0.15s;
+  transform-origin: center center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .filter-toggle-chip:hover {
@@ -212,7 +215,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.15s;
+  transform-origin: center center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .filter-search-icon-btn:hover {
@@ -257,6 +261,7 @@
   font-family: inherit;
   cursor: pointer;
   color: #000;
+  transform-origin: center center;
   transition: background 0.12s, border-color 0.12s;
   line-height: 1;
 }

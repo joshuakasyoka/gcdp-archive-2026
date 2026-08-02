@@ -43,6 +43,7 @@
   align-items: stretch;
   padding: 28px 0;
   border-bottom: 1px solid #e0e0e0;
+  transform-origin: center top;
 }
 
 .collab-index-item:first-child {
@@ -62,6 +63,7 @@
   color: #555;
   margin-top: 2px;
   align-self: flex-start;
+  transform-origin: center center;
 }
 
 .collab-index-body {
@@ -103,6 +105,7 @@
   background: #e8e8e8;
   overflow: hidden;
   text-decoration: none;
+  transform-origin: center center;
 }
 
 .collab-index-thumb img,
@@ -111,6 +114,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transform-origin: center center;
 }
 
 .collab-index-thumb-placeholder {

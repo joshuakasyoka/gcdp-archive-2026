@@ -1,10 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { SplitText } from 'gsap/SplitText';
 import './Navbar.css';
+
+gsap.registerPlugin(useGSAP, SplitText);
 
 export default function Navbar() {
   const location = useLocation();
   const headerRef = useRef(null);
+  const titleRef = useRef(null);
   const isAbout = location.pathname === '/about';
 
   useEffect(() => {
@@ -29,11 +35,76 @@ export default function Navbar() {
     };
   }, [location.pathname]);
 
+  useGSAP((_, contextSafe) => {
+    const titleEl = titleRef.current;
+    if (!titleEl) return undefined;
+
+    const mm = gsap.matchMedia();
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const split = SplitText.create(titleEl, {
+        type: 'chars',
+        charsClass: 'navbar-title-char',
+        aria: 'auto',
+      });
+
+      const chars = split.chars;
+      const state = { spread: 0, hovering: false };
+      // px of gap growth per second between adjacent letters — no upper limit
+      const SPREAD_RATE = 10;
+
+      gsap.set(chars, {
+        display: 'inline-block',
+        transformOrigin: '0% 50%',
+      });
+
+      const applySpread = () => {
+        gsap.set(chars, { x: (i) => i * state.spread });
+      };
+
+      const onTick = contextSafe(() => {
+        if (!state.hovering) return;
+        state.spread += SPREAD_RATE * gsap.ticker.deltaRatio(60) / 60;
+        applySpread();
+      });
+
+      gsap.ticker.add(onTick);
+
+      const onEnter = contextSafe(() => {
+        gsap.killTweensOf(state);
+        state.hovering = true;
+      });
+
+      const onLeave = contextSafe(() => {
+        state.hovering = false;
+        gsap.to(state, {
+          spread: 0,
+          duration: 0.65,
+          ease: 'back.out(1.7)',
+          overwrite: true,
+          onUpdate: applySpread,
+        });
+      });
+
+      titleEl.addEventListener('pointerenter', onEnter);
+      titleEl.addEventListener('pointerleave', onLeave);
+
+      return () => {
+        gsap.ticker.remove(onTick);
+        titleEl.removeEventListener('pointerenter', onEnter);
+        titleEl.removeEventListener('pointerleave', onLeave);
+      };
+    });
+
+    return () => mm.revert();
+  }, { scope: titleRef });
+
   return (
     <header className="navbar" ref={headerRef}>
       <nav className="navbar-top">
         <div className="navbar-left">
-          <Link to="/" className="navbar-title">MA GCDP ARCHIVE</Link>
+          <Link to="/" className="navbar-title" ref={titleRef}>
+            MA GCDP ARCHIVE
+          </Link>
         </div>
         <div className="navbar-right">
           <NavLink to="/about" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>About</NavLink>

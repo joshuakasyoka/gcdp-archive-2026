@@ -1,9 +1,24 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { LayoutGrid, List, MapPin, Network, Search, X, SlidersHorizontal } from 'lucide-react';
 import clsx from 'clsx';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { isPriorityTag } from '../config/priorityTags';
 import { formatCollaboratorName } from '../utils/collaborations';
+import { bindChipHover, staggerIn } from '../utils/chipMotion';
 import './FilterBar.css';
+
+gsap.registerPlugin(useGSAP);
+
+function spinFilterIcon(btn, opening) {
+  const icon = btn?.querySelector('svg');
+  if (!icon) return;
+  gsap.fromTo(
+    icon,
+    { rotation: opening ? 80 : -80 },
+    { rotation: 0, duration: 0.45, ease: 'back.out(1.6)', overwrite: 'auto' }
+  );
+}
 
 const COHORTS = [
   { label: 'All', value: null },
@@ -43,6 +58,8 @@ export default function FilterBar({
 }) {
   const [showFilters, setShowFilters] = useState(false);
   const [expandedCats, setExpandedCats] = useState({});
+  const barRef = useRef(null);
+  const prevChipCount = useRef(0);
   const hasFilterPanel = showTagFilters || !!filterPanelContent;
 
   useEffect(() => {
@@ -73,6 +90,41 @@ export default function FilterBar({
     return chips;
   }, [filters.tags]);
 
+  useGSAP(() => {
+    const root = barRef.current;
+    if (!root) return undefined;
+    return bindChipHover(root);
+  }, { scope: barRef });
+
+  useGSAP(() => {
+    if (!showFilters) return;
+    const groups = gsap.utils.toArray('.filter-group');
+    const tags = gsap.utils.toArray('.filter-tag');
+    if (!groups.length && !tags.length) return;
+
+    const mm = gsap.matchMedia();
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.from(groups, {
+        y: 18,
+        autoAlpha: 0,
+        duration: 0.5,
+        stagger: 0.07,
+        ease: 'power3.out',
+      });
+      staggerIn(tags, { delay: 0.08, stagger: 0.012, y: 8, duration: 0.35 });
+    });
+    return () => mm.revert();
+  }, { scope: barRef, dependencies: [showFilters], revertOnUpdate: true });
+
+  useGSAP(() => {
+    const chips = gsap.utils.toArray('.active-chip');
+    const prev = prevChipCount.current;
+    if (chips.length > prev) {
+      staggerIn(chips.slice(prev), { y: 8, stagger: 0.05, duration: 0.35, ease: 'back.out(1.4)' });
+    }
+    prevChipCount.current = chips.length;
+  }, { scope: barRef, dependencies: [activeChips] });
+
   function toggleTag(cat, tag) {
     const prev = filters.tags?.[cat] || [];
     const next = prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag];
@@ -92,6 +144,12 @@ export default function FilterBar({
     setShowFilters(false);
   }
 
+  function toggleFilterPanel(e) {
+    const opening = !showFilters;
+    spinFilterIcon(e.currentTarget, opening);
+    setShowFilters(opening);
+  }
+
   const leftChoices = leftOptions || COHORTS;
   const currentLeftValue = leftOptions ? leftValue : filters.cohort;
 
@@ -108,7 +166,7 @@ export default function FilterBar({
   }
 
   return (
-    <div className="filter-bar">
+    <div className="filter-bar" ref={barRef}>
       {/* Row 1: cohorts + search + view toggle */}
       <div className={clsx('filter-top-row', showFilters && 'filter-top-row--filters-open')}>
         <div className="filter-cohorts">
@@ -136,7 +194,7 @@ export default function FilterBar({
               <button
                 type="button"
                 className={clsx('filter-toggle-chip', showFilters && 'filter-toggle-chip--active')}
-                onClick={() => setShowFilters(v => !v)}
+                onClick={toggleFilterPanel}
                 title={showFilters ? 'Hide Filters' : 'Show Filters'}
               >
                 <SlidersHorizontal size={14} strokeWidth={1.5} />

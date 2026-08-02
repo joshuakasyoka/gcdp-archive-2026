@@ -9,7 +9,7 @@ export default function ArtefactCard({ artefact, onClick, size = 'md', style }) 
   return (
     <div
       className={clsx('artefact-card', `artefact-card--${size}`)}
-      onClick={() => onClick?.(artefact)}
+      onClick={(e) => onClick?.(artefact, e.currentTarget)}
       style={style}
     >
       <div className="artefact-card__image">
