@@ -166,10 +166,10 @@
   gap: 4px;
   font-size: 12px;
   padding: 5px 12px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--chip-border);
   border-radius: 100px;
   color: #222;
-  background: #fff;
+  background: var(--chip-bg);
   max-width: 100%;
   min-width: 0;
 }
@@ -192,12 +192,15 @@
   cursor: pointer;
   color: #555;
   border-style: dashed;
+  border-color: #aaa;
+  background: #fff;
   font-family: inherit;
 }
 
 .project-tag-chip--toggle:hover {
   border-color: #888;
   color: #222;
+  background: #f5f5f5;
 }
 
 .project-tag-link {
