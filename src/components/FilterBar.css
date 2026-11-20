@@ -133,9 +133,9 @@
   max-width: 220px;
   min-width: 0;
   padding: 7px 16px;
-  border: 1px solid var(--chip-border);
+  border: 1px solid #ccc;
   border-radius: 100px;
-  background: var(--chip-bg);
+  background: #fff;
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
@@ -145,7 +145,7 @@
 }
 
 .active-chip:hover {
-  background: var(--chip-bg-hover);
+  background: #f5f5f5;
 }
 
 .active-chip svg {
@@ -256,9 +256,9 @@
   max-width: 220px;
   min-width: 0;
   padding: 8px 20px;
-  border: 1px dashed var(--chip-border);
+  border: 1px dashed #aaa;
   border-radius: 100px;
-  background: var(--chip-bg);
+  background: #fff;
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
@@ -270,26 +270,24 @@
 
 /* Tag pill — hover */
 .filter-tag:hover {
-  background: var(--chip-bg-hover);
-  border-color: #c9b42e;
+  background: #ebebeb;
+  border-color: #777;
 }
 
 /* Tag pill — active/selected: solid border, shows × */
 .filter-tag--active {
-  border: 1px solid var(--chip-border);
-  background: var(--chip-bg);
+  border: 1px solid #ccc;
+  background: #fff;
 }
 
 /* Show all chip */
 .filter-tag--show-all {
   color: #555;
   border-style: dashed;
-  background: #fff;
-  border-color: #aaa;
 }
 
 .filter-tag--active:hover {
-  background: var(--chip-bg-hover);
+  background: #f5f5f5;
 }
 
 .filter-tag-x {
