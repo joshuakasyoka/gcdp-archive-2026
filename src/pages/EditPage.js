@@ -58,29 +58,44 @@ function humanize(slug) {
   return (slug || '').replace(/_/g, ' ');
 }
 
-function trailingNumber(id) {
-  const match = /(\d+)$/.exec(id || '');
-  return match ? parseInt(match[1], 10) : 0;
+// IDs become page addresses (/projects/:id, /artefacts/:id), so they must
+// never repeat. They're built from the title plus a short random code, e.g.
+// "knowing-by-walking-4k2x". Counting up from the highest number broke when
+// several students added work at once: everyone picked the same next number.
+const ID_CODE_CHARS = 'abcdefghijkmnpqrstuvwxyz23456789';
+
+function randomCode(length = 4) {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, b => ID_CODE_CHARS[b % ID_CODE_CHARS.length]).join('');
 }
 
-// Project ids must be unique across every student, because /projects/:id
-// routes on them. The API always names a new student's first project
-// "project_01", so we assign the id ourselves.
-function nextProjectId(students) {
-  let max = 0;
-  for (const s of students) {
-    for (const p of s.projects || []) max = Math.max(max, trailingNumber(p.project_id));
-  }
-  return `project_${String(max + 1).padStart(3, '0')}`;
+function makeId(title, fallback, taken) {
+  const base =
+    (title || '')
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 48)
+      .replace(/-+$/g, '') || fallback;
+  let id;
+  do {
+    id = `${base}-${randomCode()}`;
+  } while (taken.has(id));
+  return id;
 }
 
-// Uses the highest existing number (not the count) so an id is never reused
-// after a delete.
-function nextArtifactId(project) {
-  const projectNum = (project.project_id || '').replace(/^project_/, '');
-  let max = 0;
-  for (const a of project.artifacts || []) max = Math.max(max, trailingNumber(a.artifact_id));
-  return `artifact_${projectNum}_${String(max + 1).padStart(2, '0')}`;
+function allProjectIds(students) {
+  return new Set(students.flatMap(s => (s.projects || []).map(p => p.project_id)));
+}
+
+function allArtefactIds(students) {
+  return new Set(
+    students.flatMap(s => (s.projects || []).flatMap(p => (p.artifacts || []).map(a => a.artifact_id)))
+  );
 }
 
 function loadImage(file) {
@@ -888,7 +903,7 @@ export default function EditPage() {
         project_title: projectTitle,
       });
       createdId = created.student_id;
-      createdProjectId = nextProjectId(students);
+      createdProjectId = makeId(projectTitle, 'project', allProjectIds(students));
       const firstProject = { ...created.projects[0], project_id: createdProjectId, semester: '' };
       await updateStudent(createdId, { projects: [firstProject] });
     }, `Added ${`${first} ${last}`.trim()}. Fill in their project details below.`);
@@ -903,7 +918,7 @@ export default function EditPage() {
 
   const handleAddProject = async f => {
     if (!student) return;
-    const id = nextProjectId(students);
+    const id = makeId(f.title, 'project', allProjectIds(students));
     const title = f.title.trim();
     const ok = await run('Adding project…', async () => {
       const photos = await uploadPhotos(f.photos, student.student_id, setBusy);
@@ -967,7 +982,7 @@ export default function EditPage() {
         artifacts: [
           ...(p.artifacts || []),
           {
-            artifact_id: nextArtifactId(p),
+            artifact_id: makeId(title, 'artefact', allArtefactIds(students)),
             title,
             description: f.description.trim(),
             type: f.type,

@@ -61,6 +61,9 @@ function flattenProjects(students) {
           project_photos: [...(project.project_photos || [])],
           _student: student,
           _students: [student],
+          // Every collaborator's own project_id, so each one's URL still
+          // opens this merged page.
+          _projectIds: [project.project_id],
         };
         byTitle.set(key, merged);
         projects.push(merged);
@@ -72,6 +75,9 @@ function flattenProjects(students) {
       // (a genuinely shared/co-authored piece), record this student as an
       // additional contributor instead of dropping their copy entirely.
       existing._students.push(student);
+      if (project.project_id && !existing._projectIds.includes(project.project_id)) {
+        existing._projectIds.push(project.project_id);
+      }
 
       const artByTitle = new Map(existing.artifacts.map(a => [normalizeTitle(a.title), a]));
       for (const art of project.artifacts || []) {

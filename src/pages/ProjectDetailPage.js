@@ -50,7 +50,9 @@ export default function ProjectDetailPage() {
   const [showAllMeta, setShowAllMeta] = useState(false);
   const pageRef = useRef(null);
 
-  const project = projects.find(p => p.project_id === projectId);
+  const project = projects.find(
+    p => p.project_id === projectId || p._projectIds?.includes(projectId)
+  );
 
   useEffect(() => {
     setPhotoIndex(0);
