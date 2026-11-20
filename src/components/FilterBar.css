@@ -16,7 +16,8 @@
 
 .filter-cohorts {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 6px 16px;
   align-items: center;
   justify-self: start;
 }

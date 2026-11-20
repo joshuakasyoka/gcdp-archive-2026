@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { isPriorityTag } from '../config/priorityTags';
+import { COHORTS as COHORT_LIST } from '../config/cohorts';
 import { formatCollaboratorName } from '../utils/collaborations';
 import { bindChipHover, staggerIn } from '../utils/chipMotion';
 import './FilterBar.css';
@@ -20,11 +21,7 @@ function spinFilterIcon(btn, opening) {
   );
 }
 
-const COHORTS = [
-  { label: 'All', value: null },
-  { label: '2024 – 2026', value: 2024 },
-  { label: '2023 – 2025', value: 2023 },
-];
+const COHORTS = [{ label: 'All', value: null }, ...COHORT_LIST];
 
 const TAG_CATEGORIES = ['themes', 'design_as', 'materials', 'methods', 'collaborators'];
 const TAG_LABELS = {

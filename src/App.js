@@ -10,6 +10,7 @@ import CollaborationsPage from './pages/CollaborationsPage';
 import StudentDetailPage from './pages/StudentDetailPage';
 import GlossaryPage from './pages/GlossaryPage';
 import AboutPage from './pages/AboutPage';
+import EditPage from './pages/EditPage';
 import './App.css';
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
               <Route path="/students/:studentId" element={<StudentDetailPage />} />
               <Route path="/glossary" element={<GlossaryPage />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="/edit" element={<EditPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>

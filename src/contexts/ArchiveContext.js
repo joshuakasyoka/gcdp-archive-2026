@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { fetchStudents, fetchMapPins, fetchGlossary } from '../services/api';
 
 const ArchiveContext = createContext(null);
@@ -181,8 +181,9 @@ export function ArchiveProvider({ children }) {
     }
   };
 
-  useEffect(() => {
-    Promise.all([
+  // Exposed as `reload` so the /edit page can refresh after a write.
+  const reload = useCallback(() => {
+    return Promise.all([
       fetchStudents(),
       fetchMapPins(),
       fetchGlossary(),
@@ -210,8 +211,12 @@ export function ArchiveProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
   return (
-    <ArchiveContext.Provider value={{ students, artefacts, projects, glossary, glossaryDefinitions, glossarySources, collaboratorLinks, mapPins, loading, error, cohort, setCohort }}>
+    <ArchiveContext.Provider value={{ students, artefacts, projects, glossary, glossaryDefinitions, glossarySources, collaboratorLinks, mapPins, loading, error, cohort, setCohort, reload }}>
       {children}
     </ArchiveContext.Provider>
   );
