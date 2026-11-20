@@ -170,6 +170,14 @@ function toProjectForm(p = {}) {
     photos: (p.project_photos || [])
       .filter(ph => ph?.url)
       .map(ph => ({ key: photoKey(), url: ph.url, caption: ph.caption || '' })),
+    workshops: (p.workshops || []).map(w => ({
+      key: photoKey(),
+      title: w.title || '',
+      date: w.date ? String(w.date).slice(0, 10) : '',
+      end_date: w.end_date ? String(w.end_date).slice(0, 10) : '',
+      url: w.url || '',
+      label: w.label || '',
+    })),
   };
 }
 
@@ -189,6 +197,17 @@ function fromProjectForm(f, projectPhotos) {
     semester: opt(f.semester),
     grade: opt(f.grade),
     project_photos: projectPhotos,
+    // Rows without a title are ignored; an empty list removes the banner.
+    workshops: (f.workshops || [])
+      .filter(w => w.title.trim())
+      .map(w => {
+        const row = { title: w.title.trim() };
+        if (w.date) row.date = w.date;
+        if (w.end_date && w.end_date !== w.date) row.end_date = w.end_date;
+        if (w.url.trim()) row.url = normalizeUrl(w.url);
+        if (w.label.trim()) row.label = w.label.trim();
+        return row;
+      }),
   };
 }
 
@@ -365,6 +384,98 @@ function PhotoField({ label, items, onChange, captions = false, max = 10 }) {
   );
 }
 
+const EMPTY_WORKSHOP = () => ({ key: photoKey(), title: '', date: '', end_date: '', url: '', label: '' });
+
+// One row per workshop: title, dates and a link. Add as many as needed.
+function WorkshopsField({ idPrefix, rows, onChange }) {
+  const update = (index, patch) => onChange(rows.map((r, i) => (i === index ? { ...r, ...patch } : r)));
+  const id = (index, name) => `${idPrefix}-workshop-${index}-${name}`;
+
+  return (
+    <div className="edit-field">
+      <span className="edit-label">Workshops</span>
+      <span className="edit-muted">Shown as a scrolling banner at the top of the project page.</span>
+      <div className="edit-workshops">
+        {rows.map((r, i) => (
+          <div key={r.key} className="edit-workshop">
+            <div className="edit-workshop-head">
+              <span className="edit-workshop-number">Workshop {i + 1}</span>
+              <button
+                type="button"
+                className="edit-danger-link"
+                onClick={() => onChange(rows.filter((_, j) => j !== i))}
+              >
+                <Trash2 size={13} /> Remove
+              </button>
+            </div>
+            <div className="edit-field">
+              <label className="edit-label" htmlFor={id(i, 'title')}>Workshop title</label>
+              <input
+                id={id(i, 'title')}
+                className="edit-input"
+                value={r.title}
+                placeholder="Walking Peckham Road: an open walk"
+                onChange={e => update(i, { title: e.target.value })}
+              />
+            </div>
+            <div className="edit-grid-2">
+              <div className="edit-field">
+                <label className="edit-label" htmlFor={id(i, 'date')}>Date</label>
+                <input
+                  id={id(i, 'date')}
+                  className="edit-input"
+                  type="date"
+                  value={r.date}
+                  onChange={e => update(i, { date: e.target.value })}
+                />
+              </div>
+              <div className="edit-field">
+                <label className="edit-label" htmlFor={id(i, 'end')}>End date (if more than a day)</label>
+                <input
+                  id={id(i, 'end')}
+                  className="edit-input"
+                  type="date"
+                  min={r.date || undefined}
+                  value={r.end_date}
+                  onChange={e => update(i, { end_date: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="edit-grid-2">
+              <div className="edit-field">
+                <label className="edit-label" htmlFor={id(i, 'url')}>Link</label>
+                <input
+                  id={id(i, 'url')}
+                  className="edit-input"
+                  inputMode="url"
+                  placeholder="https://"
+                  value={r.url}
+                  onChange={e => update(i, { url: e.target.value })}
+                />
+              </div>
+              <div className="edit-field">
+                <label className="edit-label" htmlFor={id(i, 'label')}>Link text</label>
+                <input
+                  id={id(i, 'label')}
+                  className="edit-input"
+                  placeholder="Find out more"
+                  value={r.label}
+                  onChange={e => update(i, { label: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+        <GhostRow
+          title="Add workshop"
+          hint="Title, date and link"
+          onClick={() => onChange([...rows, EMPTY_WORKSHOP()])}
+        />
+      </div>
+    </div>
+  );
+}
+
 function ProjectForm({ idPrefix, initial, submitLabel, disabled, onSubmit, onCancel }) {
   const [f, setF] = useState(() => toProjectForm(initial));
   const [moreOpen, setMoreOpen] = useState(false);
@@ -417,6 +528,12 @@ function ProjectForm({ idPrefix, initial, submitLabel, disabled, onSubmit, onCan
           onChange={set('website')}
         />
       </div>
+
+      <WorkshopsField
+        idPrefix={idPrefix}
+        rows={f.workshops}
+        onChange={workshops => setF(prev => ({ ...prev, workshops }))}
+      />
 
       <PhotoField
         label="Project photos"

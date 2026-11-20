@@ -9,6 +9,7 @@ import ArtefactModal from '../components/ArtefactModal';
 import '../components/ArtefactModal.css';
 import ArtefactCard from '../components/ArtefactCard';
 import ProgressiveImage from '../components/ProgressiveImage';
+import WorkshopTicker from '../components/WorkshopTicker';
 import { formatCollaboratorName } from '../utils/collaborations';
 import { bindChipHover } from '../utils/chipMotion';
 import './ProjectDetailPage.css';
@@ -115,6 +116,7 @@ export default function ProjectDetailPage() {
         type="article"
       />
       <Link to="/projects" className="page-back-link">&lt; Back</Link>
+      <WorkshopTicker workshops={project.workshops} />
       <div className="project-detail-header">
 
         {/* Left column: text + tags */}
