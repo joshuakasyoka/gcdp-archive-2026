@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { isPriorityTag } from '../config/priorityTags';
 import { COHORTS as COHORT_LIST } from '../config/cohorts';
+import WipChip from './WipChip';
 import { formatCollaboratorName } from '../utils/collaborations';
 import { bindChipHover, staggerIn } from '../utils/chipMotion';
 import './FilterBar.css';
@@ -174,6 +175,7 @@ export default function FilterBar({
               onClick={() => onFiltersChange({ ...filters, cohort: c.value })}
             >
               {c.label}
+              {c.wip && <WipChip />}
             </button>
           ))}
         </div>
@@ -215,7 +217,7 @@ export default function FilterBar({
           >
             {leftChoices.map(c => (
               <option key={c.label} value={String(c.value ?? '')}>
-                {c.label}
+                {c.wip ? `${c.label} (WIP)` : c.label}
               </option>
             ))}
           </select>

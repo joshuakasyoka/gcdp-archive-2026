@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { initMapbox, getMapboxToken } from '../mapboxSetup';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './CollaborationMapView.css';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const mapboxgl = initMapbox();
 
@@ -12,6 +13,7 @@ function artifactHasPin(artifact, pinId) {
 }
 
 export default function CollaborationMapView({ entries, mapPins }) {
+  const { localize } = useLanguage();
   const containerRef = useRef(null);
   const [selectedPinId, setSelectedPinId] = useState(null);
 
@@ -99,7 +101,7 @@ export default function CollaborationMapView({ entries, mapPins }) {
             <strong>{selected.pin.title}</strong>
             {selected.projects.map(project => (
               <Link key={project.project_id} to={`/projects/${project.project_id}`} className="collab-map-legend-link">
-                {project.title}
+                {localize(project, 'title')}
               </Link>
             ))}
           </div>

@@ -1,10 +1,13 @@
 import React, { useState, useMemo, lazy, Suspense } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useArchive } from '../contexts/ArchiveContext';
 import Seo from '../components/Seo';
 import FilterBar from '../components/FilterBar';
 import ProgressiveImage from '../components/ProgressiveImage';
 import ViewLoadingFallback from '../components/ViewLoadingFallback';
+import WipChip from '../components/WipChip';
+import { isWipCohort } from '../config/cohorts';
+import { useLanguage } from '../contexts/LanguageContext';
 import './ProjectsPage.css';
 
 const ProjectMapView = lazy(() => import('../components/ProjectMapView'));
@@ -19,6 +22,7 @@ function matchesFilters(project, filters) {
     const q = filters.query.toLowerCase();
     const searchable = [
       project.title,
+      project.title_ja,
       project._student?.name?.display_name,
       ...(project.artifacts?.map(a => a.title) || []),
     ].join(' ').toLowerCase();
@@ -38,12 +42,17 @@ function matchesFilters(project, filters) {
 export default function ProjectsPage() {
   const { projects, mapPins, loading, error, cohort, setCohort } = useArchive();
   const [localFilters, setLocalFilters] = useState({ query: '', tags: {} });
-  const filters = { ...localFilters, cohort };
+  const { localize } = useLanguage();
+  const filters = useMemo(() => ({ ...localFilters, cohort }), [localFilters, cohort]);
   const setFilters = (next) => {
     if (next.cohort !== cohort) setCohort(next.cohort ?? null);
     setLocalFilters({ query: next.query, tags: next.tags });
   };
-  const [view, setView] = useState('grid');
+  // The view lives in the address (?view=graph) so Back from a project
+  // returns to the same view instead of the grid.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = ['map', 'graph'].includes(searchParams.get('view')) ? searchParams.get('view') : 'grid';
+  const setView = next => setSearchParams(next === 'grid' ? {} : { view: next }, { replace: true });
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
 
   const projectsWithTags = useMemo(() =>
@@ -108,14 +117,17 @@ export default function ProjectsPage() {
                   >
                     <div className="project-card__image">
                       {coverImg ? (
-                        <ProgressiveImage src={coverImg} alt={project.title} />
+                        <ProgressiveImage src={coverImg} alt={localize(project, 'title')} />
                       ) : (
                         <div className="project-card__placeholder" />
                       )}
                     </div>
                     <div className="project-card__meta">
-                      <div className="project-card__title">{project.title}</div>
-                      <div className="project-card__subtitle">{cohortLabel}</div>
+                      <div className="project-card__title">{localize(project, 'title')}</div>
+                      <div className="project-card__subtitle">
+                        {cohortLabel}
+                        {isWipCohort(project._student?.student_year) && <WipChip />}
+                      </div>
                     </div>
                   </Link>
                 );

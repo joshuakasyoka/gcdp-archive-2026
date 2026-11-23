@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import * as d3 from 'd3';
 import { isPriorityTag } from '../config/priorityTags';
 import { formatCollaboratorName } from '../utils/collaborations';
@@ -73,15 +74,60 @@ function layoutNodesInCircle(nodes, width, height) {
   });
 }
 
+// Where the graph was when a project was opened from it, saved per history
+// entry so Back reopens the graph at the same zoom, layout and project.
+const RESTORE_PREFIX = 'gcdp_project_graph:';
+
+function readRestore(key) {
+  try {
+    const raw = sessionStorage.getItem(RESTORE_PREFIX + key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveRestore(key, value) {
+  try {
+    sessionStorage.setItem(RESTORE_PREFIX + key, JSON.stringify(value));
+  } catch {
+    // ignore storage errors (e.g. private browsing)
+  }
+}
+
+function truncateTitle(title) {
+  const t = title || '';
+  return t.length > 22 ? t.slice(0, 22) + '…' : t;
+}
+
 export default function ProjectForceGraph({ projects }) {
   const svgRef = useRef(null);
   const simulationRef = useRef(null);
   const transformRef = useRef(null);
+  const nodesRef = useRef([]);
   const lastRevealRef = useRef(0);
   const navigate = useNavigate();
-  const [visibleCount, setVisibleCount] = useState(Math.min(BATCH_SIZE, projects.length));
+  const location = useLocation();
+  const locationKeyRef = useRef(location.key);
+  locationKeyRef.current = location.key;
+  const navigationType = useNavigationType();
+  const { localize } = useLanguage();
+  const localizeRef = useRef(localize);
+  localizeRef.current = localize;
 
+  // Only restore when arriving with Back/Forward, not on a fresh visit.
+  const restoreRef = useRef(navigationType === 'POP' ? readRestore(location.key) : null);
+  const [visibleCount, setVisibleCount] = useState(() =>
+    Math.min(Math.max(BATCH_SIZE, restoreRef.current?.visibleCount || 0), projects.length)
+  );
+
+  // Start over only when the list itself changes (e.g. a new filter), so a
+  // restored view survives the first render.
+  const prevProjectsRef = useRef(projects);
   useEffect(() => {
+    if (prevProjectsRef.current === projects) return;
+    prevProjectsRef.current = projects;
+    restoreRef.current = null;
     setVisibleCount(Math.min(BATCH_SIZE, projects.length));
     transformRef.current = null;
   }, [projects]);
@@ -142,6 +188,7 @@ export default function ProjectForceGraph({ projects }) {
       .scaleExtent([0.2, 3])
       .on('zoom', (event) => {
         transformRef.current = event.transform;
+        if (event.sourceEvent) restoreRef.current = null;
         g.attr('transform', event.transform);
 
         // d3-zoom's wheel handler calls stopImmediatePropagation, so a
@@ -156,14 +203,33 @@ export default function ProjectForceGraph({ projects }) {
         }
       });
 
+    // Kept until the visitor pans, zooms or drags, so a re-render before
+    // then lands in the same place.
+    const restore = restoreRef.current;
+    if (restore?.transform) {
+      const { x, y, k } = restore.transform;
+      transformRef.current = d3.zoomIdentity.translate(x, y).scale(k);
+    }
+
     svg.call(zoom);
     if (transformRef.current) svg.call(zoom.transform, transformRef.current);
 
     layoutNodesInCircle(nodes, width, height);
+    // Put every card back where it was, so the graph doesn't reshuffle.
+    if (restore?.positions) {
+      for (const n of nodes) {
+        const pos = restore.positions[n.id];
+        if (pos) {
+          n.x = pos[0];
+          n.y = pos[1];
+        }
+      }
+    }
+    nodesRef.current = nodes;
 
     const simulation = d3.forceSimulation(nodes)
       .velocityDecay(0.72)
-      .alpha(0.12)
+      .alpha(restore?.positions ? 0.004 : 0.12)
       .alphaDecay(0.008)
       .force('link', d3.forceLink(links).id(d => d.id).distance(420).strength(d => Math.min(d.strength * 0.04, 0.18)))
       .force('charge', d3.forceManyBody().strength(-1100))
@@ -231,12 +297,14 @@ export default function ProjectForceGraph({ projects }) {
       .attr('class', 'force-node')
       .on('mouseenter', (event, d) => {
         event.stopPropagation();
+        node.classed('force-node--returned', false);
         setHighlight(d.id);
       })
       .on('mouseleave', () => setHighlight(null))
       .call(
         d3.drag()
           .on('start', (event, d) => {
+            restoreRef.current = null;
             if (!event.active) simulation.alphaTarget(0.1).restart();
             d.fx = d.x; d.fy = d.y;
           })
@@ -261,6 +329,15 @@ export default function ProjectForceGraph({ projects }) {
       .style('cursor', 'pointer')
       .on('click', (event, d) => {
         event.stopPropagation();
+        const t = transformRef.current;
+        saveRestore(locationKeyRef.current, {
+          projectId: d.id,
+          visibleCount,
+          transform: t ? { x: t.x, y: t.y, k: t.k } : null,
+          positions: Object.fromEntries(
+            nodesRef.current.map(n => [n.id, [Math.round(n.x), Math.round(n.y)]])
+          ),
+        });
         navigate(`/projects/${d.project.project_id}`);
       });
 
@@ -274,24 +351,38 @@ export default function ProjectForceGraph({ projects }) {
       .style('pointer-events', 'none');
 
     node.append('text')
+      .attr('class', 'force-node-title')
       .attr('y', CARD_H / 2 - 14)
       .attr('text-anchor', 'middle')
       .attr('font-size', '11px')
       .attr('font-family', 'sans-serif')
       .attr('fill', '#000')
-      .text(d => {
-        const title = d.project.title || '';
-        return title.length > 22 ? title.slice(0, 22) + '…' : title;
-      })
+      .text(d => truncateTitle(localizeRef.current(d.project, 'title')))
       .style('pointer-events', 'none');
 
     node.attr('transform', d => `translate(${d.x},${d.y})`);
 
-    g.attr('opacity', 0)
-      .transition()
-      .duration(900)
-      .ease(d3.easeCubicOut)
-      .attr('opacity', 1);
+    // Coming back from a project: outline that project and light up its links
+    // until the pointer moves onto another card.
+    if (restore?.projectId && nodes.some(n => n.id === restore.projectId)) {
+      setHighlight(restore.projectId);
+      node.classed('force-node--returned', d => d.id === restore.projectId);
+      // If that card is off screen, slide it into the middle of the view.
+      const target = nodes.find(n => n.id === restore.projectId);
+      const t = transformRef.current || d3.zoomIdentity;
+      const [sx, sy] = t.apply([target.x, target.y]);
+      if (sx < CARD_W / 2 || sy < CARD_H / 2 || sx > width - CARD_W / 2 || sy > height - CARD_H / 2) {
+        svg.call(zoom.translateTo, target.x, target.y);
+      }
+    }
+
+    if (!restore) {
+      g.attr('opacity', 0)
+        .transition()
+        .duration(900)
+        .ease(d3.easeCubicOut)
+        .attr('opacity', 1);
+    }
 
     simulation.on('tick', () => {
       link.each(function(d) {
@@ -319,6 +410,13 @@ export default function ProjectForceGraph({ projects }) {
 
     return () => simulation.stop();
   }, [buildGraph, navigate, projects.length, visibleCount]);
+
+  // Swap card titles between English and Japanese without rebuilding the graph.
+  useEffect(() => {
+    d3.select(svgRef.current)
+      .selectAll('.force-node-title')
+      .text(d => truncateTitle(localize(d.project, 'title')));
+  }, [localize]);
 
   return (
     <div className="force-graph">

@@ -4,8 +4,10 @@ import { useArchive } from '../contexts/ArchiveContext';
 import Seo from '../components/Seo';
 import ProgressiveImage from '../components/ProgressiveImage';
 import './StudentDetailPage.css';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function StudentDetailPage() {
+  const { localize } = useLanguage();
   const { studentId } = useParams();
   const { students, loading } = useArchive();
 
@@ -51,7 +53,7 @@ export default function StudentDetailPage() {
           {project && (
             <div className="student-detail-project-link">
               <Link to={`/projects/${project.project_id}`} className="btn-outline">
-                View Project: {project.title}
+                View Project: {localize(project, 'title')}
               </Link>
             </div>
           )}

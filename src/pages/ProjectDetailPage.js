@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -10,6 +10,9 @@ import '../components/ArtefactModal.css';
 import ArtefactCard from '../components/ArtefactCard';
 import ProgressiveImage from '../components/ProgressiveImage';
 import WorkshopTicker from '../components/WorkshopTicker';
+import WipChip from '../components/WipChip';
+import { isWipCohort } from '../config/cohorts';
+import { useLanguage } from '../contexts/LanguageContext';
 import { formatCollaboratorName } from '../utils/collaborations';
 import { bindChipHover } from '../utils/chipMotion';
 import './ProjectDetailPage.css';
@@ -43,6 +46,8 @@ function TagChips({ tags, expanded, onToggle, renderChip }) {
 export default function ProjectDetailPage() {
   const { projectId } = useParams();
   const { projects, loading } = useArchive();
+  const { lang, localize } = useLanguage();
+  const navigate = useNavigate();
   const [selected, setSelected] = useState(null);
   const [modalOriginRect, setModalOriginRect] = useState(null);
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -117,13 +122,42 @@ export default function ProjectDetailPage() {
         image={photos[0]?.url || project.artifacts?.[0]?.file_paths?.[0] || undefined}
         type="article"
       />
-      <Link to="/projects" className="page-back-link">&lt; Back</Link>
+      <Link
+        to="/projects"
+        className="page-back-link"
+        onClick={e => {
+          // Go back to wherever this page was opened from (e.g. the graph,
+          // which then reopens at the same project). Only fall back to the
+          // projects list when the page was opened directly.
+          if (window.history.state?.idx > 0) {
+            e.preventDefault();
+            navigate(-1);
+          }
+        }}
+      >
+        &lt; Back
+      </Link>
       <WorkshopTicker workshops={project.workshops} />
       <div className="project-detail-header">
 
         {/* Left column: text + tags */}
         <div className="project-detail-meta">
-          <h1 className="project-detail-title">{project.title}</h1>
+          {isWipCohort(project._student?.student_year) && (
+            <div className="project-detail-wip">
+              <WipChip />
+            </div>
+          )}
+          <h1 className="project-detail-title" lang={lang === 'ja' && project.title_ja ? 'ja' : undefined}>
+            {localize(project, 'title')}
+          </h1>
+          {localize(project, 'subtitle') && (
+            <p
+              className="project-detail-subtitle"
+              lang={lang === 'ja' && project.subtitle_ja ? 'ja' : undefined}
+            >
+              {localize(project, 'subtitle')}
+            </p>
+          )}
           {(project._students?.length ? project._students : [project._student]).filter(Boolean).length > 0 && (
             <div className="modal-chips project-detail-student-chips">
               {(project._students?.length ? project._students : [project._student])

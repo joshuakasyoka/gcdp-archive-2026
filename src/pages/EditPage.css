@@ -758,3 +758,14 @@ textarea.edit-input {
 .edit-workshops .edit-artefact--ghost {
   padding: 4px 0;
 }
+
+/* Edit name / Delete student, side by side */
+.edit-student-actions {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.edit-neutral-link:hover {
+  color: #000;
+}

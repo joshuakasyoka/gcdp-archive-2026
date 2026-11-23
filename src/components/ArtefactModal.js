@@ -7,6 +7,7 @@ import ProgressiveImage from './ProgressiveImage';
 import { formatCollaboratorName } from '../utils/collaborations';
 import { bindChipHover } from '../utils/chipMotion';
 import './ArtefactModal.css';
+import { useLanguage } from '../contexts/LanguageContext';
 
 gsap.registerPlugin(useGSAP);
 
@@ -18,6 +19,7 @@ function readOriginRect(rect) {
 }
 
 export default function ArtefactModal({ artefact, onClose, originRect: originRectProp }) {
+  const { localize } = useLanguage();
   const [imgIndex, setImgIndex] = useState(0);
   const overlayRef = useRef(null);
   const contentRef = useRef(null);
@@ -308,7 +310,7 @@ export default function ArtefactModal({ artefact, onClose, originRect: originRec
                     className="modal-chip modal-chip--collab"
                     onClick={requestClose}
                   >
-                    <span className="chip-label">{artefact._project.title}</span>
+                    <span className="chip-label">{localize(artefact._project, 'title')}</span>
                     <ArrowUpRight size={11} strokeWidth={1.5} />
                   </Link>
                 </div>

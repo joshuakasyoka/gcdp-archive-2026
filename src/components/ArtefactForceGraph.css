@@ -68,3 +68,8 @@
   stroke-linejoin: round;
   transition: opacity 0.2s;
 }
+
+/* The project you just came back from */
+.force-node--returned rect {
+  stroke: #000;
+}

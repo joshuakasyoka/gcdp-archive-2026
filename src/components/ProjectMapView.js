@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { initMapbox, getMapboxToken } from '../mapboxSetup';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './ArtefactMapView.css';
+import WipChip from './WipChip';
+import { isWipCohort } from '../config/cohorts';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const mapboxgl = initMapbox();
 
@@ -11,6 +14,7 @@ function artifactHasPin(artifact, pinId) {
 }
 
 export default function ProjectMapView({ projects, mapPins }) {
+  const { localize } = useLanguage();
   const containerRef = useRef(null);
   const [selected, setSelected] = useState(null);
 
@@ -91,8 +95,8 @@ export default function ProjectMapView({ projects, mapPins }) {
                       <img src={coverImg} alt={project.title} className="map-panel-thumb" loading="lazy" decoding="async" />
                     )}
                     <div>
-                      <div className="map-panel-title">{project.title}</div>
-                      <div className="map-panel-subtitle">{cohortLabel}</div>
+                      <div className="map-panel-title">{localize(project, 'title')}</div>
+                      <div className="map-panel-subtitle">{cohortLabel}{isWipCohort(project._student?.student_year) && <WipChip />}</div>
                     </div>
                   </Link>
                 );

@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Trash2, X, Plus, ImagePlus, ChevronDown } from 'lucide-react';
+import { Trash2, X, Plus, ImagePlus, ChevronDown, Pencil } from 'lucide-react';
 import clsx from 'clsx';
 import { useArchive } from '../contexts/ArchiveContext';
 import Seo from '../components/Seo';
-import { COHORTS } from '../config/cohorts';
+import { COHORTS, LATEST_COHORT } from '../config/cohorts';
 import {
   API_HOST,
   UnauthorizedError,
@@ -11,6 +11,7 @@ import {
   deleteArtifact,
   deleteStudent,
   fetchStudent,
+  fetchStudents,
   getCmsKey,
   setCmsKey,
   updateStudent,
@@ -59,33 +60,67 @@ function humanize(slug) {
 }
 
 // IDs become page addresses (/projects/:id, /artefacts/:id), so they must
-// never repeat. They're built from the title plus a short random code, e.g.
-// "knowing-by-walking-4k2x". Counting up from the highest number broke when
-// several students added work at once: everyone picked the same next number.
-const ID_CODE_CHARS = 'abcdefghijkmnpqrstuvwxyz23456789';
-
-function randomCode(length = 4) {
-  const bytes = new Uint8Array(length);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, b => ID_CODE_CHARS[b % ID_CODE_CHARS.length]).join('');
+// never repeat. They follow the archive's numbering: projects are
+// "project_045" and their artefacts "artifact_045_01", "artifact_045_02"…
+// The next number is always worked out from a fresh read of the archive
+// right before saving (never from what this page loaded earlier), so two
+// people adding work at once don't both pick the same number.
+function idNumber(id, prefix) {
+  const m = new RegExp(`^${prefix}_(\\d+)`).exec(id || '');
+  return m ? parseInt(m[1], 10) : 0;
 }
 
-function makeId(title, fallback, taken) {
-  const base =
-    (title || '')
-      .normalize('NFKD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/&/g, ' and ')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 48)
-      .replace(/-+$/g, '') || fallback;
-  let id;
-  do {
-    id = `${base}-${randomCode()}`;
-  } while (taken.has(id));
-  return id;
+const pad = (n, width) => String(n).padStart(width, '0');
+
+function nextProjectId(allStudents) {
+  const taken = allProjectIds(allStudents);
+  let n = Math.max(0, ...[...taken].map(id => idNumber(id, 'project'))) + 1;
+  while (taken.has(`project_${pad(n, 3)}`)) n += 1;
+  return `project_${pad(n, 3)}`;
+}
+
+function nextArtefactId(project, allStudents) {
+  const taken = allArtefactIds(allStudents);
+  for (const a of project.artifacts || []) taken.add(a.artifact_id);
+  const num = idNumber(project.project_id, 'project');
+  const prefix = num ? `artifact_${pad(num, 3)}` : `artifact_${project.project_id}`;
+  let n =
+    Math.max(
+      0,
+      ...(project.artifacts || []).map(a => {
+        const m = /_(\d+)$/.exec(a.artifact_id || '');
+        return a.artifact_id?.startsWith(`${prefix}_`) && m ? parseInt(m[1], 10) : 0;
+      })
+    ) + 1;
+  while (taken.has(`${prefix}_${pad(n, 2)}`)) n += 1;
+  return `${prefix}_${pad(n, 2)}`;
+}
+
+// If someone else saved a project with the same number in the moment between
+// our read and our write, move ours to the next free number.
+async function settleProjectId(studentId, projectId) {
+  const all = await fetchStudents();
+  const clash = all.some(
+    s => s.student_id !== studentId && (s.projects || []).some(p => p.project_id === projectId)
+  );
+  if (!clash) return projectId;
+  const newId = nextProjectId(all);
+  const fresh = await fetchStudent(studentId);
+  const projects = (fresh.projects || []).map(p => {
+    if (p.project_id !== projectId) return p;
+    const oldPrefix = `artifact_${pad(idNumber(projectId, 'project'), 3)}_`;
+    const newPrefix = `artifact_${pad(idNumber(newId, 'project'), 3)}_`;
+    return {
+      ...p,
+      project_id: newId,
+      artifacts: (p.artifacts || []).map(a => ({
+        ...a,
+        artifact_id: a.artifact_id?.startsWith(oldPrefix) ? newPrefix + a.artifact_id.slice(oldPrefix.length) : a.artifact_id,
+      })),
+    };
+  });
+  await updateStudent(studentId, { projects });
+  return newId;
 }
 
 function allProjectIds(students) {
@@ -173,7 +208,9 @@ function normalizeUrl(value) {
 function toProjectForm(p = {}) {
   return {
     title: p.title || '',
+    title_ja: p.title_ja || '',
     subtitle: p.subtitle || '',
+    subtitle_ja: p.subtitle_ja || '',
     hmw_question: p.hmw_question || '',
     description: p.description || '',
     website: p.website || '',
@@ -202,7 +239,9 @@ function fromProjectForm(f, projectPhotos) {
   const opt = v => (v && v.trim() ? v.trim() : undefined);
   return {
     title: f.title.trim(),
+    title_ja: opt(f.title_ja),
     subtitle: opt(f.subtitle),
+    subtitle_ja: opt(f.subtitle_ja),
     hmw_question: opt(f.hmw_question),
     description: f.description.trim(),
     website: opt(normalizeUrl(f.website)),
@@ -491,7 +530,52 @@ function WorkshopsField({ idPrefix, rows, onChange }) {
   );
 }
 
-function ProjectForm({ idPrefix, initial, submitLabel, disabled, onSubmit, onCancel }) {
+// Inline form for correcting a student's first and last name.
+function StudentNameForm({ initial, disabled, onSubmit, onCancel }) {
+  const [first, setFirst] = useState(initial?.first_name || '');
+  const [last, setLast] = useState(initial?.last_name || '');
+
+  return (
+    <form
+      className="edit-form edit-name-form"
+      onSubmit={e => {
+        e.preventDefault();
+        if (first.trim()) onSubmit({ first: first.trim(), last: last.trim() });
+      }}
+    >
+      <div className="edit-grid-2">
+        <div className="edit-field">
+          <label className="edit-label" htmlFor="edit-student-first">First name</label>
+          <input
+            id="edit-student-first"
+            className="edit-input"
+            value={first}
+            onChange={e => setFirst(e.target.value)}
+            required
+            autoFocus
+          />
+        </div>
+        <div className="edit-field">
+          <label className="edit-label" htmlFor="edit-student-last">Last name</label>
+          <input
+            id="edit-student-last"
+            className="edit-input"
+            value={last}
+            onChange={e => setLast(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="edit-row">
+        <button type="submit" className="edit-btn edit-btn--primary" disabled={disabled || !first.trim()}>
+          Save name
+        </button>
+        <button type="button" className="edit-link" onClick={onCancel}>Cancel</button>
+      </div>
+    </form>
+  );
+}
+
+function ProjectForm({ idPrefix, initial, submitLabel, disabled, onSubmit, onCancel, japanese }) {
   const [f, setF] = useState(() => toProjectForm(initial));
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -516,10 +600,37 @@ function ProjectForm({ idPrefix, initial, submitLabel, disabled, onSubmit, onCan
         <input id={id('title')} className="edit-input" value={f.title} onChange={set('title')} required />
       </div>
 
+      {japanese && (
+        <div className="edit-field">
+          <label className="edit-label" htmlFor={id('title-ja')}>Title in Japanese</label>
+          <input
+            id={id('title-ja')}
+            className="edit-input"
+            lang="ja"
+            value={f.title_ja}
+            onChange={set('title_ja')}
+          />
+        </div>
+      )}
+
       <div className="edit-field">
         <label className="edit-label" htmlFor={id('subtitle')}>Subtitle</label>
         <input id={id('subtitle')} className="edit-input" value={f.subtitle} onChange={set('subtitle')} />
       </div>
+
+      {japanese && (
+        <div className="edit-field">
+          <label className="edit-label" htmlFor={id('subtitle-ja')}>Subtitle in Japanese</label>
+          <input
+            id={id('subtitle-ja')}
+            className="edit-input"
+            lang="ja"
+            value={f.subtitle_ja}
+            onChange={set('subtitle_ja')}
+          />
+          <span className="edit-muted">Shown when someone switches the site to 日本語.</span>
+        </div>
+      )}
 
       <div className="edit-field">
         <label className="edit-label" htmlFor={id('hmw')}>“How might we…” question</label>
@@ -803,6 +914,7 @@ export default function EditPage() {
 
   const [editingArtefactId, setEditingArtefactId] = useState(null);
   const [busy, setBusy] = useState('');
+  const [nameEditOpen, setNameEditOpen] = useState(false);
   const [message, setMessage] = useState(null);
 
   const cohortStudents = useMemo(
@@ -814,6 +926,11 @@ export default function EditPage() {
   );
   const student = cohortStudents.find(s => s.student_id === studentId) || null;
   const project = student?.projects?.find(p => p.project_id === projectId) || null;
+
+  // Close the name form when moving to another student.
+  useEffect(() => {
+    setNameEditOpen(false);
+  }, [studentId]);
 
   // Keep selections valid as the cohort or data changes.
   useEffect(() => {
@@ -903,9 +1020,10 @@ export default function EditPage() {
         project_title: projectTitle,
       });
       createdId = created.student_id;
-      createdProjectId = makeId(projectTitle, 'project', allProjectIds(students));
+      createdProjectId = nextProjectId(await fetchStudents());
       const firstProject = { ...created.projects[0], project_id: createdProjectId, semester: '' };
       await updateStudent(createdId, { projects: [firstProject] });
+      createdProjectId = await settleProjectId(createdId, createdProjectId);
     }, `Added ${`${first} ${last}`.trim()}. Fill in their project details below.`);
     if (ok) {
       openDetailsFor.current = createdProjectId;
@@ -918,11 +1036,12 @@ export default function EditPage() {
 
   const handleAddProject = async f => {
     if (!student) return;
-    const id = makeId(f.title, 'project', allProjectIds(students));
+    let id = null;
     const title = f.title.trim();
     const ok = await run('Adding project…', async () => {
       const photos = await uploadPhotos(f.photos, student.student_id, setBusy);
       setBusy('Saving project…');
+      id = nextProjectId(await fetchStudents());
       const fresh = await fetchStudent(student.student_id);
       const projectRecord = {
         project_id: id,
@@ -930,6 +1049,7 @@ export default function EditPage() {
         artifacts: [],
       };
       await updateStudent(student.student_id, { projects: [...(fresh.projects || []), projectRecord] });
+      id = await settleProjectId(student.student_id, id);
     }, `Added project “${title}”.`);
     if (ok) {
       setProjectId(id);
@@ -977,12 +1097,13 @@ export default function EditPage() {
     const ok = await run('Saving artefact…', async () => {
       const photos = await uploadPhotos(f.photos, student.student_id, setBusy);
       setBusy('Saving artefact…');
+      const everyone = await fetchStudents();
       await writeProject(p => ({
         ...p,
         artifacts: [
           ...(p.artifacts || []),
           {
-            artifact_id: makeId(title, 'artefact', allArtefactIds(students)),
+            artifact_id: nextArtefactId(p, everyone),
             title,
             description: f.description.trim(),
             type: f.type,
@@ -1029,6 +1150,18 @@ export default function EditPage() {
       });
     }, `Saved “${title}”.`);
     if (ok) setEditingArtefactId(null);
+  };
+
+  const handleRenameStudent = async ({ first, last }) => {
+    if (!student) return;
+    const displayName = `${first} ${last}`.trim();
+    const ok = await run('Saving name…', async () => {
+      const fresh = await fetchStudent(student.student_id);
+      await updateStudent(student.student_id, {
+        name: { ...(fresh.name || {}), first_name: first, last_name: last, display_name: displayName },
+      });
+    }, `Renamed to ${displayName}.`);
+    if (ok) setNameEditOpen(false);
   };
 
   const handleDeleteStudent = async () => {
@@ -1252,15 +1385,37 @@ export default function EditPage() {
               <>
                 <div className="edit-student-head">
                   <h2 id="edit-projects-h" className="edit-h3 edit-h3--first">{student.name?.display_name}</h2>
-                  <button
-                    type="button"
-                    className="edit-danger-link"
-                    disabled={!!busy}
-                    onClick={handleDeleteStudent}
-                  >
-                    <Trash2 size={14} /> Delete student
-                  </button>
+                  <div className="edit-student-actions">
+                    <button
+                      type="button"
+                      className="edit-danger-link edit-neutral-link"
+                      aria-expanded={nameEditOpen}
+                      disabled={!!busy}
+                      onClick={() => setNameEditOpen(o => !o)}
+                    >
+                      <Pencil size={13} /> Edit name
+                    </button>
+                    <button
+                      type="button"
+                      className="edit-danger-link"
+                      disabled={!!busy}
+                      onClick={handleDeleteStudent}
+                    >
+                      <Trash2 size={14} /> Delete student
+                    </button>
+                  </div>
                 </div>
+                {nameEditOpen && (
+                  <div className="edit-box edit-box--spaced">
+                    <StudentNameForm
+                      key={student.student_id}
+                      initial={student.name}
+                      disabled={!!busy}
+                      onSubmit={handleRenameStudent}
+                      onCancel={() => setNameEditOpen(false)}
+                    />
+                  </div>
+                )}
                 <h3 className="edit-h3">
                   {student.name?.first_name || student.name?.display_name}’s projects
                 </h3>
@@ -1320,6 +1475,7 @@ export default function EditPage() {
                                 initial={p}
                                 submitLabel="Save project"
                                 disabled={!!busy}
+                                japanese={student.student_year === LATEST_COHORT}
                                 onSubmit={handleSaveProject}
                                 onCancel={() => setProjectEditOpen(false)}
                               />
@@ -1346,6 +1502,7 @@ export default function EditPage() {
                       initial={NEW_PROJECT}
                       submitLabel="Add project"
                       disabled={!!busy}
+                      japanese={student.student_year === LATEST_COHORT}
                       onSubmit={handleAddProject}
                       onCancel={() => setNewProjectOpen(false)}
                     />

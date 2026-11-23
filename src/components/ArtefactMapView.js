@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { initMapbox, getMapboxToken } from '../mapboxSetup';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './ArtefactMapView.css';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const mapboxgl = initMapbox();
 
@@ -10,6 +11,7 @@ function artifactHasPin(artifact, pinId) {
 }
 
 export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
+  const { localize } = useLanguage();
   const containerRef = useRef(null);
   const [selected, setSelected] = useState(null);
 
@@ -80,7 +82,7 @@ export default function ArtefactMapView({ artefacts, mapPins, onSelect }) {
                   )}
                   <div>
                     <div className="map-panel-title">{a.title}</div>
-                    <div className="map-panel-subtitle">{a._project?.title}</div>
+                    <div className="map-panel-subtitle">{localize(a._project, 'title')}</div>
                   </div>
                 </div>
               ))}

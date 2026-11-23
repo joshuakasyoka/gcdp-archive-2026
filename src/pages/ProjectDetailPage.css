@@ -214,3 +214,18 @@
     max-width: none;
   }
 }
+
+.project-detail-wip {
+  margin-bottom: 10px;
+}
+
+.project-detail-wip .wip-chip {
+  margin-left: 0;
+}
+
+.project-detail-subtitle {
+  font-size: 18px;
+  line-height: 1.35;
+  color: #555;
+  margin: -4px 0 14px;
+}

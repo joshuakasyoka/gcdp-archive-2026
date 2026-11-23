@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { ArchiveProvider } from './contexts/ArchiveContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import Navbar from './components/Navbar';
 import ArtefactsPage from './pages/ArtefactsPage';
 import ProjectsPage from './pages/ProjectsPage';
@@ -18,6 +19,7 @@ export default function App() {
     <HelmetProvider>
       <BrowserRouter>
         <ArchiveProvider>
+        <LanguageProvider>
           <div className="app">
             <Navbar />
             <main className="app-main">
@@ -37,6 +39,7 @@ export default function App() {
             </Routes>
           </main>
         </div>
+      </LanguageProvider>
       </ArchiveProvider>
     </BrowserRouter>
     </HelmetProvider>
