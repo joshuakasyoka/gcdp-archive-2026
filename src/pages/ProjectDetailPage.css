@@ -136,9 +136,12 @@
   gap: 16px;
 }
 
+/* Never wider than when three share the row, so one or two artefacts keep
+   the same size instead of stretching across the page. */
 .project-artefact-grid .artefact-card {
-  flex: 1;
+  flex: 1 1 0;
   min-width: 0;
+  max-width: calc((100% - 32px) / 3);
 }
 
 .project-tag-section {
