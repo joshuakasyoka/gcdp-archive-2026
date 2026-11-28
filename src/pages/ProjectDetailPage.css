@@ -27,6 +27,14 @@
   padding: 4px 10px;
 }
 
+/* The copy of the date (with the WIP chip beside it) at the top right is for portrait screens only
+   (see portrait.css). */
+
+/* The copy of the date beside the text is for portrait screens only (see portrait.css). */
+.project-detail-cohort--lead {
+  display: none;
+}
+
 .project-detail-cohort {
   font-size: 12px;
   color: #888;

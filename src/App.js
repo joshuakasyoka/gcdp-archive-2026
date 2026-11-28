@@ -13,6 +13,7 @@ import GlossaryPage from './pages/GlossaryPage';
 import AboutPage from './pages/AboutPage';
 import EditPage from './pages/EditPage';
 import './App.css';
+import './portrait.css';
 
 export default function App() {
   return (

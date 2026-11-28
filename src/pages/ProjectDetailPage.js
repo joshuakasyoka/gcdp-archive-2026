@@ -21,6 +21,11 @@ gsap.registerPlugin(useGSAP);
 
 const PREVIEW_COUNT = 3;
 
+// On large portrait screens (e.g. 1440 × 2560) the tags sit beside the text, so they start open.
+function tagsStartOpen() {
+  try { return window.matchMedia('(orientation: portrait) and (min-width: 1200px)').matches; } catch { return false; }
+}
+
 function TagChips({ tags, expanded, onToggle, renderChip }) {
   if (!tags?.length) return null;
 
@@ -52,7 +57,8 @@ export default function ProjectDetailPage() {
   const [modalOriginRect, setModalOriginRect] = useState(null);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [expandedCats, setExpandedCats] = useState({});
-  const [showAllMeta, setShowAllMeta] = useState(false);
+  // On large portrait screens (e.g. 1440 × 2560) the tags sit beside the text, so they start open.
+  const [showAllMeta, setShowAllMeta] = useState(tagsStartOpen);
   const pageRef = useRef(null);
 
   const project = projects.find(
@@ -61,8 +67,17 @@ export default function ProjectDetailPage() {
 
   useEffect(() => {
     setPhotoIndex(0);
-    setShowAllMeta(false);
+    setShowAllMeta(tagsStartOpen());
   }, [projectId]);
+
+  // On large portrait screens there is no More info / Less info, so the tags open whenever the screen becomes one.
+  useEffect(() => {
+    if (!window.matchMedia) return undefined;
+    const mq = window.matchMedia('(orientation: portrait) and (min-width: 1200px)');
+    const onChange = e => { if (e.matches) setShowAllMeta(true); };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   const aggregatedTags = useMemo(() => {
     const cats = { themes: new Set(), design_as: new Set(), materials: new Set(), methods: new Set(), collaborators: new Set() };
@@ -142,6 +157,7 @@ export default function ProjectDetailPage() {
 
         {/* Left column: text + tags */}
         <div className="project-detail-meta">
+          <div className="project-detail-lead">
           {isWipCohort(project._student?.student_year) && (
             <div className="project-detail-wip">
               <WipChip />
@@ -175,9 +191,18 @@ export default function ProjectDetailPage() {
             </div>
           )}
 
+          {/* The date sits with the text on portrait screens (and with the tags otherwise). */}
+          {cohortLabel && (
+            <div className="project-detail-cohort project-detail-cohort--lead">
+              <span>{cohortLabel}</span>
+              {isWipCohort(project._student?.student_year) && <WipChip className="project-detail-wip-inline" />}
+            </div>
+          )}
+
           {project.description && (
             <p className="project-detail-description">{project.description}</p>
           )}
+          </div>
 
           {!showAllMeta && hasExtraMeta && (
             <button

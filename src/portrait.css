@@ -1,0 +1,137 @@
+/* Large portrait screens: tall displays such as 1440 × 2560 turned on their side.
+   Only for portrait screens at least 1200px wide, so phones, tablets and landscape screens are unaffected.
+   The pages already use the width well; these rules use the extra height. */
+@media (orientation: portrait) and (min-width: 1200px) {
+  /* About: the photo band takes over half the screen, with the text under it, so the page fills it. */
+  .landing-hero-image {
+    height: 55vh;
+  }
+
+  /* Project pages: the photo becomes a full-width banner at the top, with the title and text under it. */
+  .project-detail-header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .project-detail-carousel {
+    order: -1;
+  }
+
+  .project-detail-carousel img,
+  .project-detail-carousel .progressive-image {
+    aspect-ratio: 16 / 9;
+  }
+
+  /* Under the banner: a row across the page with the WIP chip, title, subtitle, people and date; then the
+     description on the left and the tags (Methods, Design As, Themes ...) on the right, starting level with
+     each other; the artefacts follow underneath as before. */
+  .project-detail-meta {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    column-gap: 56px;
+    align-items: start;
+  }
+
+  .project-detail-lead {
+    display: contents;
+  }
+
+  .project-detail-lead > * {
+    grid-column: 1 / -1;
+  }
+
+  .project-detail-lead > .project-detail-description {
+    grid-column: 1;
+    margin-top: 24px;
+  }
+
+  .project-detail-meta > .project-detail-tags,
+  .project-detail-meta > .project-meta-toggle {
+    grid-column: 2;
+    margin-top: 24px;
+  }
+
+  /* A vertical line between the description and the tags, midway in the gap, as tall as the taller of the two. */
+  .project-detail-meta > .project-detail-tags {
+    align-self: stretch;
+    margin-left: -28px;
+    padding-left: 28px;
+    border-left: 1px solid #e0e0e0;
+  }
+
+  .project-detail-tags > .project-detail-cohort {
+    display: none;
+  }
+
+  /* The tags are always shown here, so there is no More info / Less info. */
+  .project-meta-toggle {
+    display: none !important;
+  }
+
+  /* The date sits at the top right, just under the banner, level with the title. */
+  .project-detail-lead > .project-detail-title {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    padding-right: 120px;
+  }
+
+  .project-detail-cohort--lead {
+    grid-column: 2 !important;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    height: 18px;
+    /* Centred on the title's first line (40px type on a 46px line). */
+    margin: 14px 0 0;
+    line-height: 15px;
+  }
+
+  /* The WIP chip at the top right, after the date, rather than above the title. */
+  .project-detail-lead > .project-detail-wip {
+    display: none;
+  }
+
+  .project-detail-cohort--lead .project-detail-wip-inline {
+    margin: 0;
+  }
+
+  /* Collaborations: the globe across the top, the collaborations listed underneath,
+     rather than side by side with the globe small in a very tall column. */
+  .collaborations-layout--map {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(560px, 40vh) auto;
+    min-height: 0;
+  }
+
+  .collaborations-layout--map .collaborations-map-panel {
+    order: -1;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  .collaborations-layout--map .collaborations-index-panel {
+    max-height: none;
+    overflow: visible;
+    border-right: none;
+    padding: 8px 32px 48px;
+  }
+}
+
+/* There is room for the collaborations two to a row. */
+@media (orientation: portrait) and (min-width: 1200px) {
+  .collaborations-layout--map .collaborations-index-panel {
+    padding: 8px 48px 48px;
+  }
+
+  .collaborations-layout--map .collab-index {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 64px;
+  }
+
+  .collaborations-layout--map .collab-index-item:nth-child(2) {
+    padding-top: 16px;
+  }
+}
