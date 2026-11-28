@@ -2,9 +2,81 @@
    Only for portrait screens at least 1200px wide, so phones, tablets and landscape screens are unaffected.
    The pages already use the width well; these rules use the extra height. */
 @media (orientation: portrait) and (min-width: 1200px) {
+  /* Everything a quarter larger (text, chips, cards, spacing) so it reads from a little further away. */
+  html {
+    zoom: 1.25;
+  }
+
+  /* The maps measure their box on screen (already enlarged) and then get enlarged again, which pushes the
+     globe off centre; inside a map the scaling is undone, so it draws at its normal size and stays centred. */
+  html .mapboxgl-map {
+    zoom: 0.8;
+  }
+
+  /* Sizes given as a share of the screen height are scaled with the page too, so each is divided by the
+     1.25 here to keep it the share of the screen it was meant to be. */
+  html .map-view,
+  html .force-graph {
+    height: calc(100vh / 1.25 - 180px);
+  }
+
+  html .intro-modal-content {
+    max-height: calc(92vh / 1.25);
+  }
+
+  html .modal-content,
+  html .modal-image img,
+  html .modal-image .progressive-image {
+    max-height: calc(90vh / 1.25);
+  }
+
+  .app,
+  .artefacts-page,
+  .projects-page,
+  .collaborations-page {
+    min-height: calc(100vh / 1.25);
+  }
+
+  .glossary-page {
+    min-height: calc(100vh / 1.25 - var(--navbar-height, 96px));
+  }
+
+  /* Glossary: the list is centred within the scaled page (its own centring uses the screen width), and a
+     picked term opens underneath the terms, the width of the list, rather than in a panel on the right. */
+  .glossary-main {
+    margin-left: max(24px, calc((100vw / 1.25 - 1000px) / 2));
+  }
+
+  .glossary-page--panel-open .glossary-main {
+    padding-right: 24px;
+  }
+
+  html .glossary-panel {
+    position: relative;
+    top: auto;
+    right: auto;
+    z-index: auto;
+    box-sizing: border-box;
+    width: auto;
+    min-width: 0;
+    max-width: 1000px;
+    height: auto;
+    margin: -32px auto 0 max(24px, calc((100vw / 1.25 - 1000px) / 2));
+    padding: 40px 24px 80px;
+    overflow: visible;
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  html .glossary-panel-close {
+    top: 32px;
+    right: 24px;
+  }
+
   /* About: the photo band takes over half the screen, with the text under it, so the page fills it. */
   .landing-hero-image {
-    height: 55vh;
+    /* 55% of the screen; screen-height units are scaled with the page, so divided by the 1.25. */
+    height: calc(55vh / 1.25);
   }
 
   /* Project pages: the photo becomes a full-width banner at the top, with the title and text under it. */
@@ -102,7 +174,7 @@
      rather than side by side with the globe small in a very tall column. */
   .collaborations-layout--map {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(560px, 40vh) auto;
+    grid-template-rows: minmax(560px, calc(40vh / 1.25)) auto;
     min-height: 0;
   }
 
